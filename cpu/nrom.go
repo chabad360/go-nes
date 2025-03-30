@@ -16,11 +16,11 @@ func (n *NROM) Read(cpu *CPU, clock <-chan int, address uint16) uint8 {
 		if address < 0xBFFF {
 			return n.PRGROM[address-0x8000]
 		} else if address < 0xFFFF {
-			if len(n.PRGROM) > 0x4000 {
-				return n.PRGROM[address-0xC000]
-			} else {
-				return n.PRGROM[address-0x8000]
+			address = address - 0x8000
+			if len(n.PRGROM) <= 0x4000 {
+				address = address % 0x4000 // Loop back if PRGROM is less than 16KB
 			}
+			return n.PRGROM[address]
 		}
 	}
 	return n.GenericMapper.Read(cpu, clock, address)
