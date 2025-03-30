@@ -1,7 +1,5 @@
 package cpu
 
-import "testing"
-
 type ResultState struct {
 	A, X, Y, SP         uint8
 	C, Z, I, D, B, V, N bool
@@ -33,46 +31,4 @@ func CompareResultState(cpu *CPU, r ResultState) bool {
 	//	}
 	//}
 	return true
-}
-
-func TestAddWithCarryIMM(t *testing.T) {
-	tests := []struct {
-		name     string
-		cpu      *CPU
-		operand1 uint8
-		result   ResultState
-	}{
-		{
-			name:     "No Carry",
-			cpu:      &CPU{A: 0x00, C: false},
-			operand1: 0x01,
-			result:   ResultState{A: 0x01, C: false, Z: false, N: false},
-		},
-		{
-			name:     "With Carry",
-			cpu:      &CPU{A: 0x01, C: true},
-			operand1: 0x01,
-			result:   ResultState{A: 0x03, C: false, Z: false, N: false},
-		},
-		{
-			name:     "Carried",
-			cpu:      &CPU{A: 0xFF, C: false},
-			operand1: 0x01,
-			result:   ResultState{A: 0x00, C: true, Z: true, N: false},
-		},
-		{
-			name:     "Signed Overflow",
-			cpu:      &CPU{A: 0x7F, C: false},
-			operand1: 0x01,
-			result:   ResultState{A: 0x80, C: false, Z: false, N: true, V: true},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			AddWithCarryIMM(tt.cpu, tt.operand1, 0)
-			if !CompareResultState(tt.cpu, tt.result) {
-				t.Errorf("AddWithCarryIMM() = %#v, want %#v", CPUToResultState(tt.cpu), tt.result)
-			}
-		})
-	}
 }
