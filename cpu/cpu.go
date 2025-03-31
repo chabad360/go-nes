@@ -16,7 +16,8 @@ type CPU struct {
 
 	Clock <-chan int
 
-	Log bool
+	Log     bool
+	Stubbed bool
 }
 
 // PowerOn initializes the CPU to a powered-on state.
@@ -53,7 +54,7 @@ type Exec struct {
 }
 
 // Decode fetches the next opcode from memory and returns the corresponding instruction.
-func (cpu *CPU) Decode() Exec {
+func (cpu *CPU) Decode() *Exec {
 	opcode := cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
 	instruction, exists := Instructions[opcode]
 	if !exists {
@@ -64,40 +65,52 @@ func (cpu *CPU) Decode() Exec {
 			Execute: UNKNOWN,
 		}
 	}
-	cpu.PC++
-
-	return Exec{
+	exec := &Exec{
 		Instruction: instruction,
 		Opcode:      opcode,
-		PC:          cpu.PC - 1,
+		PC:          cpu.PC,
 	}
+
+	return exec
 }
 
 // Fetch retrieves the operands for the instruction based on its size.
-func (cpu *CPU) Fetch(exec Exec) {
-	// Fetch the operands based on the instruction size
-	var operand1, operand2 uint8
-	if exec.Instruction.Size == 2 {
-		operand1 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
-		cpu.PC++
+func (cpu *CPU) Fetch(exec *Exec) {
+	if exec.Instruction.Size >= 2 {
+		exec.Operand1 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC+1)
 	}
 	if exec.Instruction.Size == 3 {
-		operand2 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
-		cpu.PC++
+		exec.Operand2 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC+2)
 	}
-
-	exec.Operand1 = operand1
-	exec.Operand2 = operand2
 }
 
 // Execute runs the instruction with the provided operands.
-func (cpu *CPU) Execute(exec Exec) {
+func (cpu *CPU) Execute(exec *Exec) {
 	if cpu.Log {
 		slog.Debug(fmt.Sprintf("%x %x %x", exec.Instruction.Opcode, exec.Operand1, exec.Operand2))
 	}
+	cpu.Stubbed = false
 
+	pc := cpu.PC
 	exec.Instruction.Execute(cpu, exec.Operand1, exec.Operand2)
+	if pc == cpu.PC {
+		cpu.PC += uint16(exec.Instruction.Size)
+	}
+
 	for i := 0; i < exec.Instruction.Cycles; i++ {
 		<-cpu.Clock
 	}
+}
+
+// Push pushes a value onto the stack.
+func (cpu *CPU) Push(value uint8) {
+	cpu.Mapper.Write(cpu, cpu.Clock, 0x0100+uint16(cpu.SP), value)
+	cpu.SP--
+}
+
+// Pop pops a value from the stack.
+func (cpu *CPU) Pop() uint8 {
+	cpu.SP++
+	value := cpu.Mapper.Read(cpu, cpu.Clock, 0x0100+uint16(cpu.SP))
+	return value
 }
