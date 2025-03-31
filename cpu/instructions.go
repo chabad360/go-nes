@@ -1,6 +1,9 @@
 package cpu
 
-import "fmt"
+import (
+	"fmt"
+	"log/slog"
+)
 
 type Instruction struct {
 	Opcode  uint8
@@ -30,6 +33,18 @@ var Instructions = map[uint8]Instruction{
 	// JSR: Jump to Subroutine
 	0x20: {Opcode: 0x20, Size: 3, Mode: Absolute, Cycles: 6, Execute: JumpToSubroutineABS},
 
+	// LDX: Load X Register
+	0xA2: {Opcode: 0xA2, Size: 2, Mode: Immediate, Cycles: 2, Execute: StubImmediate},
+	0xA6: {Opcode: 0xA6, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StubZeroPage},
+	0xB6: {Opcode: 0xB6, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StubZeroPageY},
+	0xAE: {Opcode: 0xAE, Size: 3, Mode: Absolute, Cycles: 4, Execute: StubAbsolute},
+	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: StubAbsoluteY},
+
+	// STX: Store X Register
+	0x86: {Opcode: 0x86, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StubZeroPage},
+	0x96: {Opcode: 0x96, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StubZeroPageY},
+	0x8E: {Opcode: 0x8E, Size: 3, Mode: Absolute, Cycles: 4, Execute: StubAbsolute},
+
 	0xEA: {Opcode: 0xEA, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},
 }
 
@@ -45,4 +60,183 @@ func UNKNOWN(cpu *CPU, operand1 uint8, operand2 uint8) {
 	value := cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
 
 	panic(fmt.Sprintf("Unknown opcode: %x at PC: %x", value, cpu.PC))
+}
+
+// StubImmediate is a placeholder for immediate addressing mode
+func StubImmediate(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	slog.Warn("Immediate Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", "None",
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", "None",
+		"Value", operand1,
+	)
+}
+
+// StubImplicit is a placeholder for implicit addressing mode
+func StubImplicit(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	slog.Warn("Implicit Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", "None",
+		"Operand2", "None",
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", "None",
+		"Value", "None",
+	)
+}
+
+// StubAccumulator is a placeholder for accumulator addressing mode
+func StubAccumulator(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	slog.Warn("Accumulator Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", "None",
+		"Operand2", "None",
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", "None",
+		"Value", cpu.A,
+	)
+}
+
+// StubRelative is a placeholder for relative addressing mode
+func StubRelative(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	value, address := Relative(cpu, operand1, operand2)
+	slog.Warn("Relative Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", "None",
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", address,
+		"Value", value,
+	)
+}
+
+// StubZeroPage is a placeholder for zero page addressing mode operation
+func StubZeroPage(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	value, address := ZeroPage(cpu, operand1, operand2)
+	slog.Warn("Zero Page Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", "None",
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", address,
+		"Value", value,
+	)
+}
+
+// StubZeroPageX is a placeholder for zero page X addressing mode
+func StubZeroPageX(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	value, address := ZeroPageX(cpu, operand1, operand2)
+	slog.Warn("Zero Page X Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", "None",
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", address,
+		"Value", value,
+	)
+}
+
+// StubZeroPageY is a placeholder for zero page Y addressing mode operation
+func StubZeroPageY(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	value, address := ZeroPageY(cpu, operand1, operand2)
+	slog.Warn("Zero Page Y Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", "None",
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", address,
+		"Value", value,
+	)
+}
+
+// StubAbsolute is a placeholder for absolute addressing mode operation
+func StubAbsolute(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	value, address := Absolute(cpu, operand1, operand2)
+	slog.Warn("Absolute Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", operand2,
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", address,
+		"Value", value,
+	)
+}
+
+// StubAbsoluteX is a placeholder for absolute X addressing mode operation
+func StubAbsoluteX(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	value, address := AbsoluteX(cpu, operand1, operand2)
+	slog.Warn("Absolute X Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", operand2,
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", address,
+		"Value", value,
+	)
+}
+
+// StubAbsoluteY is a placeholder for absolute Y addressing mode operation
+func StubAbsoluteY(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	value, address := AbsoluteY(cpu, operand1, operand2)
+	slog.Warn("Absolute Y Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", operand2,
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", address,
+		"Value", value,
+	)
+}
+
+// StubIndirect is a placeholder for indirect addressing mode operation
+func StubIndirect(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	_, value2 := Indirect(cpu, operand1, operand2)
+	slog.Warn("Indirect Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", operand2,
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", uint16(operand2)<<8|uint16(operand1),
+		"Value", value2,
+	)
+}
+
+// StubIndexedIndirect is a placeholder for indexed indirect addressing mode
+func StubIndexedIndirect(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	value, address := IndexedIndirect(cpu, operand1, operand2)
+	slog.Warn("Indexed Indirect Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", "None",
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", address,
+		"Value", value,
+	)
+}
+
+// StubIndirectIndexed is a placeholder for an indirect indexed addressing mode operation
+func StubIndirectIndexed(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cpu.Stubbed = true
+	value, address := IndirectIndexed(cpu, operand1, operand2)
+	slog.Warn("Indirect Indexed Mode Instruction Stubbed",
+		"PC", cpu.PC,
+		"Operand1", operand1,
+		"Operand2", "None",
+		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Address", address,
+		"Value", value,
+	)
 }
