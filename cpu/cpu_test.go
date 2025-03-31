@@ -3,10 +3,11 @@ package cpu
 import (
 	"bufio"
 	"fmt"
-	"go-nes/cart"
 	"os"
 	"regexp"
 	"testing"
+
+	"go-nes/cart"
 )
 
 type TestLog struct {
@@ -74,24 +75,57 @@ func ParseTestLog(logFile string) ([]TestLog, error) {
 	return states, nil
 }
 
+func testFlags(t *testing.T, cpu *CPU, log TestLog) bool {
+	failed := false
+	if cpu.C != log.C {
+		t.Errorf("Carry flag mismatch: expected %v, got %v", log.C, cpu.C)
+		failed = true
+	}
+	if cpu.Z != log.Z {
+		t.Errorf("Zero flag mismatch: expected %v, got %v", log.Z, cpu.Z)
+		failed = true
+	}
+	if cpu.I != log.I {
+		t.Errorf("Interrupt flag mismatch: expected %v, got %v", log.I, cpu.I)
+		failed = true
+	}
+	if cpu.D != log.D {
+		t.Errorf("Decimal flag mismatch: expected %v, got %v", log.D, cpu.D)
+		failed = true
+	}
+	if cpu.B != log.B {
+		t.Errorf("Break flag mismatch: expected %v, got %v", log.B, cpu.B)
+		failed = true
+	}
+	if cpu.V != log.V {
+		t.Errorf("Overflow flag mismatch: expected %v, got %v", log.V, cpu.V)
+		failed = true
+	}
+	if cpu.N != log.N {
+		t.Errorf("Negative flag mismatch: expected %v, got %v", log.N, cpu.N)
+		failed = true
+	}
+	return failed
+}
+
 func TestCPU_NESTest(t *testing.T) {
-	testlog, err := ParseTestLog("testdata/NESTest.log")
+	testlog, err := ParseTestLog("testdata/nestest.log")
 	if err != nil {
 		t.Fatalf("Failed to parse test log: %v", err)
 	}
 
-	// Load the NESTest cart
-	cart, err := cart.NewCartidge("testdata/NESTest.nes")
+	// Load the NESTest cartidge
+	cartidge, err := cart.NewCartidge("testdata/nestest.nes")
 	if err != nil {
-		t.Fatalf("Failed to load NESTest cart: %v", err)
+		t.Fatalf("Failed to load NESTest cartidge: %v", err)
 	}
 
 	clock := make(chan int)
 
 	cpu := &CPU{
 		Mapper: &NROM{
-			PRGROM: cart.PRGROM,
-			CHRROM: cart.CHRROM,
+			PRGROM: cartidge.PRGROM,
+			CHRROM: cartidge.CHRROM,
 		},
 		Clock: clock,
 		Log:   true,
@@ -105,30 +139,54 @@ func TestCPU_NESTest(t *testing.T) {
 		}
 	}()
 
-	cpu.PC = 0xC000              // Start at the beginning of nestest
-	for i := 0; i < 10000; i++ { // Run for a reasonable number of cycles
-		exec := cpu.Decode()
-
+	cpu.PC = 0xC000 // Start at the beginning of nestest
+	for i := 0; i < len(testlog); i++ {
 		l := testlog[i]
-		if _, exists := Instructions[exec.Opcode]; !exists {
-			t.Errorf("Encountered unknown opcode at PC=%04X: %X\nExpected: %X (%s), Args: %X %X (%s)",
-				exec.PC, exec.Opcode, l.Opcode, l.Operation, l.Operand1, l.Operand2, l.Args)
-			t.FailNow()
-		}
-		if exec.PC != l.Exec.PC {
-			t.Errorf("Decode failed: PC mismatch: expected %04X, got %04X", l.Exec.PC, exec.PC)
-		}
-		if exec.Opcode != l.Exec.Opcode {
-			t.Errorf("Decode failed: Opcode mismatch: expected %02X %s, got %02X", l.Exec.Opcode, l.Operation, exec.Opcode)
-		}
+		t.Run(fmt.Sprintf("%d: %X %s", i, l.Exec.PC, l.Operation), func(t *testing.T) {
 
-		cpu.Fetch(exec)
+			exec := cpu.Decode()
+			if _, exists := Instructions[exec.Opcode]; !exists {
+				t.Errorf("Encountered unknown opcode at PC=%04X: %X,Expected: %X (%s), Args: %X %X (%s)",
+					exec.PC, exec.Opcode, l.Opcode, l.Operation, l.Operand1, l.Operand2, l.Args)
+				t.Fail()
+			}
+			if exec.PC != l.Exec.PC {
+				t.Errorf("Decode failed: PC mismatch: expected %04X, got %04X", l.Exec.PC, exec.PC)
+				t.Fail()
+			}
+			if exec.Opcode != l.Exec.Opcode {
+				t.Errorf("Decode failed: Opcode mismatch: expected %02X %s, got %02X", l.Exec.Opcode, l.Operation, exec.Opcode)
+				t.Fail()
+			}
 
-		if exec.Operand1 != l.Exec.Operand1 || exec.Operand2 != l.Exec.Operand2 {
-			t.Errorf("Decode failed: Operand mismatch: expected %02X %02X (%s), got %02X %02X", l.Exec.Operand1, l.Exec.Operand2, l.Args, exec.Operand1, exec.Operand2)
-		}
+			cpu.Fetch(exec)
+			if exec.Operand1 != l.Exec.Operand1 || exec.Operand2 != l.Exec.Operand2 {
+				t.Errorf("Decode failed: Operand mismatch: expected %02X %02X (%s), got %02X %02X", l.Exec.Operand1, l.Exec.Operand2, l.Args, exec.Operand1, exec.Operand2)
+				t.Fail()
+			}
 
-		cpu.Execute(exec)
+			if t.Failed() {
+				t.FailNow()
+			}
+
+			cpu.Execute(exec)
+			if cpu.Stubbed {
+				t.Fail()
+			}
+			testFlags(t, cpu, testlog[i+1])
+			if cpu.X != testlog[i+1].X {
+				t.Errorf("X register mismatch: expected %02X, got %02X", testlog[i+1].X, cpu.X)
+			}
+			if cpu.Y != testlog[i+1].Y {
+				t.Errorf("Y register mismatch: expected %02X, got %02X", testlog[i+1].Y, cpu.Y)
+			}
+			if cpu.SP != testlog[i+1].SP {
+				t.Errorf("SP register mismatch: expected %02X, got %02X", testlog[i+1].SP, cpu.SP)
+			}
+			if cpu.A != testlog[i+1].A {
+				t.Errorf("A register mismatch: expected %02X, got %02X", testlog[i+1].A, cpu.A)
+			}
+		})
 	}
 
 }
