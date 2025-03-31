@@ -1,6 +1,6 @@
 package cpu
 
-type AddressingMode func(cpu *CPU, operand1, operand2 uint8) (uint8, uint16)
+type AddressingMode func(cpu *CPU, operand1, operand2 uint8) (value uint8, address uint16)
 
 // Immediate returns the immediate operand without any modification
 func Immediate(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
@@ -30,17 +30,17 @@ func ZeroPage(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
 
 // ZeroPageX reads a byte from the zero page using the operand plus the X register as the address
 func ZeroPageX(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
-	address := uint16(operand1 + cpu.X)
-	return cpu.Mapper.Read(cpu, cpu.Clock, address%256), address % 256 // wrap around at 0x100 for zero page
+	address := uint16(operand1+cpu.X) % 256
+	return cpu.Mapper.Read(cpu, cpu.Clock, address), address // wrap around at 0x100 for zero page
 }
 
 // ZeroPageY reads a byte from the zero page using the operand plus the Y register as the address
 func ZeroPageY(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
-	address := uint16(operand1 + cpu.Y)
-	return cpu.Mapper.Read(cpu, cpu.Clock, address%256), address % 256 // wrap around at 0x100 for zero page
+	address := uint16(operand1+cpu.Y) % 256
+	return cpu.Mapper.Read(cpu, cpu.Clock, address), address // wrap around at 0x100 for zero page
 }
 
-// Absolute reads a byte from the absolute address specified by the operand
+// Absolute reads a byte from the absolute 16-bit address specified by the operand
 func Absolute(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
 	address := uint16(operand2)<<8 | uint16(operand1)
 	return cpu.Mapper.Read(cpu, cpu.Clock, address), address
@@ -60,14 +60,17 @@ func AbsoluteY(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
 	return cpu.Mapper.Read(cpu, cpu.Clock, address), address
 }
 
-// Indirect reads a byte from the address specified by the operand, which is treated as a pointer
+// Indirect reads a byte from the address specified by the operand, which is treated as a pointer (doesn't return the address)
 func Indirect(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
 	address := uint16(operand2)<<8 | uint16(operand1)
 
 	// Read the low byte and high byte from the address
 	low := cpu.Mapper.Read(cpu, cpu.Clock, address)
 
-	hAddr := uint16((uint32(address) + 1) % 0x10000) // wrap around for 16-bit address
+	hAddr := address + 1
+	if address&0x00FF == 0x00FF {
+		hAddr = address & 0xFF00 // wrap around for page boundary bug
+	}
 	high := cpu.Mapper.Read(cpu, cpu.Clock, hAddr)
 
 	// Combine the high and low bytes to get the actual address
@@ -75,7 +78,7 @@ func Indirect(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
 
 	low = cpu.Mapper.Read(cpu, cpu.Clock, address)
 
-	hAddr = uint16((uint32(address) + 1) % 0x10000)
+	hAddr = address + 1
 	high = cpu.Mapper.Read(cpu, cpu.Clock, hAddr)
 
 	// Return the value at the indirect address
@@ -104,7 +107,7 @@ func IndirectIndexed(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
 	address := uint16(operand1)
 	low := cpu.Mapper.Read(cpu, cpu.Clock, address)
 
-	hAddr := uint16((uint32(address) + 1) % 0x10000) // wrap around for 16-bit address
+	hAddr := address + 1
 	high := cpu.Mapper.Read(cpu, cpu.Clock, hAddr)
 
 	// Combine the high and low bytes to get the actual address
