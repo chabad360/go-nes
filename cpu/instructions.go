@@ -159,6 +159,16 @@ var Instructions = map[uint8]Instruction{
 	// RTS: Return from Subroutine
 	0x60: {Opcode: 0x60, Size: 1, Mode: Implicit, Cycles: 6, Execute: ReturnFromSubroutine},
 
+	// SBC: Subtract with Carry
+	0xE9: {Opcode: 0xE9, Size: 2, Mode: Immediate, Cycles: 2, Execute: SubtractWithCarryIMM},
+	0xE5: {Opcode: 0xE5, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: SubtractWithCarryZP},
+	0xF5: {Opcode: 0xF5, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: SubtractWithCarryZPX},
+	0xED: {Opcode: 0xED, Size: 3, Mode: Absolute, Cycles: 4, Execute: SubtractWithCarryABS},
+	0xFD: {Opcode: 0xFD, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: SubtractWithCarryABSX},
+	0xF9: {Opcode: 0xF9, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: SubtractWithCarryABSY},
+	0xE1: {Opcode: 0xE1, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: SubtractWithCarryINDX},
+	0xF1: {Opcode: 0xF1, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: SubtractWithCarryINDY},
+
 	// SEC: Set Carry Flag
 	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: SetCarry},
 
