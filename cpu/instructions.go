@@ -83,6 +83,26 @@ var Instructions = map[uint8]Instruction{
 	0xC1: {Opcode: 0xC1, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: CompareINDX},
 	0xD1: {Opcode: 0xD1, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: CompareINDY},
 
+	// CPX: Compare X Register
+	0xE0: {Opcode: 0xE0, Size: 2, Mode: Immediate, Cycles: 2, Execute: CompareXIMM},
+	0xE4: {Opcode: 0xE4, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: CompareXZP},
+	0xEC: {Opcode: 0xEC, Size: 3, Mode: Absolute, Cycles: 4, Execute: CompareXABS},
+
+	// CPY: Compare Y Register
+	0xC0: {Opcode: 0xC0, Size: 2, Mode: Immediate, Cycles: 2, Execute: CompareYIMM},
+	0xC4: {Opcode: 0xC4, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: CompareYZP},
+	0xCC: {Opcode: 0xCC, Size: 3, Mode: Absolute, Cycles: 4, Execute: CompareYABS},
+
+	// EOR: Exclusive OR
+	0x49: {Opcode: 0x49, Size: 2, Mode: Immediate, Cycles: 2, Execute: BitwiseXORIMM},
+	0x45: {Opcode: 0x45, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: BitwiseXORZP},
+	0x55: {Opcode: 0x55, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: BitwiseXORZPX},
+	0x4D: {Opcode: 0x4D, Size: 3, Mode: Absolute, Cycles: 4, Execute: BitwiseXORABS},
+	0x5D: {Opcode: 0x5D, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: BitwiseXORABSX},
+	0x59: {Opcode: 0x59, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: BitwiseXORABSY},
+	0x41: {Opcode: 0x41, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: BitwiseXORINDX},
+	0x51: {Opcode: 0x51, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: BitwiseXORINDY},
+
 	// JMP: Jump
 	0x4C: {Opcode: 0x4C, Size: 3, Mode: Absolute, Cycles: 3, Execute: JumpABS},
 	0x6C: {Opcode: 0x6C, Size: 3, Mode: Indirect, Cycles: 5, Execute: JumpIND},
@@ -106,6 +126,13 @@ var Instructions = map[uint8]Instruction{
 	0xB6: {Opcode: 0xB6, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: LoadXZPY},
 	0xAE: {Opcode: 0xAE, Size: 3, Mode: Absolute, Cycles: 4, Execute: LoadXABS},
 	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: LoadXABSY},
+
+	// LDY: Load Y Register
+	0xA0: {Opcode: 0xA0, Size: 2, Mode: Immediate, Cycles: 2, Execute: LoadYIMM},
+	0xA4: {Opcode: 0xA4, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: LoadYZP},
+	0xB4: {Opcode: 0xB4, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: LoadYZPX},
+	0xAC: {Opcode: 0xAC, Size: 3, Mode: Absolute, Cycles: 4, Execute: LoadYABS},
+	0xBC: {Opcode: 0xBC, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: LoadYABSX},
 
 	// ORA: Logical OR
 	0x09: {Opcode: 0x09, Size: 2, Mode: Immediate, Cycles: 2, Execute: BitwiseOrIMM},
