@@ -68,6 +68,15 @@ var Instructions = map[uint8]Instruction{
 	// SEC: Set Carry Flag
 	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: SetCarry},
 
+	// STA: Store Accumulator
+	0x85: {Opcode: 0x85, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StoreAZP},
+	0x95: {Opcode: 0x95, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: StoreAZPX},
+	0x8D: {Opcode: 0x8D, Size: 3, Mode: Absolute, Cycles: 4, Execute: StoreAABS},
+	0x9D: {Opcode: 0x9D, Size: 3, Mode: AbsoluteX, Cycles: 5, Execute: StoreAABSX},
+	0x99: {Opcode: 0x99, Size: 3, Mode: AbsoluteY, Cycles: 5, Execute: StoreAABSY},
+	0x81: {Opcode: 0x81, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: StoreAINDX},
+	0x91: {Opcode: 0x91, Size: 2, Mode: IndirectIndexed, Cycles: 6, Execute: StoreAINDY},
+
 	// STX: Store X Register
 	0x86: {Opcode: 0x86, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StoreXZP},
 	0x96: {Opcode: 0x96, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StoreXZPY},
