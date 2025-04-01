@@ -4,7 +4,9 @@ package cpu
 func JumpToSubroutine(cpu *CPU, memory uint16) {
 	returnAddress := cpu.PC + 2
 	cpu.Push(uint8(returnAddress & 0xFF))
+	cpu.Wait()
 	cpu.Push(uint8(returnAddress >> 8))
+	cpu.Wait()
 	cpu.PC = memory
 }
 

@@ -14,7 +14,8 @@ type CPU struct {
 
 	Mapper Mapper
 
-	Clock <-chan int
+	Clock  <-chan int
+	Cycles int
 
 	Log     bool
 	Stubbed bool
@@ -56,6 +57,7 @@ type Exec struct {
 // Decode fetches the next opcode from memory and returns the corresponding instruction.
 func (cpu *CPU) Decode() *Exec {
 	opcode := cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
+	cpu.Wait()
 	instruction, exists := Instructions[opcode]
 	if !exists {
 		instruction = Instruction{
@@ -65,11 +67,15 @@ func (cpu *CPU) Decode() *Exec {
 			Execute: UNKNOWN,
 		}
 	}
+
 	exec := &Exec{
 		Instruction: instruction,
 		Opcode:      opcode,
 		PC:          cpu.PC,
 	}
+
+	cpu.Wait()
+	cpu.PC++
 
 	return exec
 }
@@ -77,10 +83,14 @@ func (cpu *CPU) Decode() *Exec {
 // Fetch retrieves the operands for the instruction based on its size.
 func (cpu *CPU) Fetch(exec *Exec) {
 	if exec.Instruction.Size >= 2 {
-		exec.Operand1 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC+1)
+		exec.Operand1 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
+		cpu.PC++
+		// We don't need to wait, because the 6502 always prefetches the next byte
 	}
 	if exec.Instruction.Size == 3 {
-		exec.Operand2 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC+2)
+		exec.Operand2 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
+		cpu.PC++
+		cpu.Wait()
 	}
 }
 
@@ -91,15 +101,7 @@ func (cpu *CPU) Execute(exec *Exec) {
 	}
 	cpu.Stubbed = false
 
-	pc := cpu.PC
 	exec.Instruction.Execute(cpu, exec.Operand1, exec.Operand2)
-	if pc == cpu.PC {
-		cpu.PC += uint16(exec.Instruction.Size)
-	}
-
-	for i := 0; i < exec.Instruction.Cycles; i++ {
-		<-cpu.Clock
-	}
 }
 
 // Push pushes a value onto the stack.
@@ -113,4 +115,9 @@ func (cpu *CPU) Pop() uint8 {
 	cpu.SP++
 	value := cpu.Mapper.Read(cpu, cpu.Clock, 0x0100+uint16(cpu.SP))
 	return value
+}
+
+// Wait waits for the next clock cycle.
+func (cpu *CPU) Wait() {
+	cpu.Cycles = <-cpu.Clock
 }

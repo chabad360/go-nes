@@ -4,7 +4,8 @@ type ResultState struct {
 	A, X, Y, SP         uint8
 	C, Z, I, D, B, V, N bool
 
-	PC uint16
+	PC     uint16
+	Cycles int
 }
 
 func CPUToResultState(cpu *CPU) ResultState {
@@ -12,7 +13,7 @@ func CPUToResultState(cpu *CPU) ResultState {
 		A: cpu.A, X: cpu.X, Y: cpu.Y, SP: cpu.SP,
 		C: cpu.C, Z: cpu.Z, I: cpu.I, D: cpu.D,
 		B: cpu.B, V: cpu.V, N: cpu.N,
-		PC: cpu.PC,
+		PC: cpu.PC, Cycles: cpu.Cycles,
 	}
 }
 
@@ -23,6 +24,9 @@ func CompareResultState(cpu *CPU, r ResultState) bool {
 		return false
 	}
 	if cpu.PC != r.PC {
+		return false
+	}
+	if cpu.Cycles != r.Cycles {
 		return false
 	}
 	//for i := 0; i < len(cpu.Memory); i++ {

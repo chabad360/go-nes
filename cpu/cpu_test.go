@@ -19,7 +19,7 @@ type TestLog struct {
 	Size      int
 }
 
-var LogRegexp = regexp.MustCompile(`([0-9A-F]{4}\s+[0-9A-F]{2}\s+[0-9A-F]{0,2}\s+[0-9A-F]{0,2})\s+([A-Z*]{3,4})\s+(.*?)\s+(A:([0-9A-F]{2})\s+X:([0-9A-F]{2})\s+Y:([0-9A-F]{2})\s+P:([0-9A-F]{2})\s+SP:([0-9A-F]{2})\s+PPU:\s*(\d+),\s*(\d+)\s+CYC:(\d+))`)
+var LogRegexp = regexp.MustCompile(`([0-9A-F]{4}\s+[0-9A-F]{2}\s+[0-9A-F]{0,2}\s+[0-9A-F]{0,2})\s+([A-Z*]{3,4})\s+(.*?)\s+(A:[0-9A-F]{2}\s+X:[0-9A-F]{2}\s+Y:[0-9A-F]{2}\s+P:[0-9A-F]{2}\s+SP:[0-9A-F]{2})\s+(PPU:\s*\d+,\s*\d+)\s+(CYC:\d+)`)
 
 func ParseTestLog(logFile string) ([]TestLog, error) {
 	file, err := os.Open(logFile)
@@ -68,6 +68,12 @@ func ParseTestLog(logFile string) ([]TestLog, error) {
 		state.ResultState.B = (flags & 0x10) != 0
 		state.ResultState.V = (flags & 0x40) != 0
 		state.ResultState.N = (flags & 0x80) != 0
+
+		// Parse the CYC value
+		n, err = fmt.Sscanf(matches[6], "CYC:%d", &state.ResultState.Cycles)
+		if err != nil && n < 1 {
+			return nil, fmt.Errorf("failed to parse cycles: %s", line)
+		}
 
 		states = append(states, state)
 	}
@@ -134,8 +140,15 @@ func TestCPU_NESTest(t *testing.T) {
 	cpu.PowerOn()
 
 	go func() {
-		for i := 0; ; i++ {
-			clock <- i
+	clock:
+		for i := 8; ; i++ {
+			select {
+			case <-t.Context().Done():
+				break clock
+			default:
+				clock <- i
+
+			}
 		}
 	}()
 
@@ -164,7 +177,7 @@ func TestCPU_NESTest(t *testing.T) {
 				t.Errorf("Decode failed: Operand mismatch: expected %02X %02X (%s), got %02X %02X", l.Exec.Operand1, l.Exec.Operand2, l.Args, exec.Operand1, exec.Operand2)
 				t.Fail()
 			}
-
+			// if the instruction is likely going to corrupt CPU state, stop this iteration.
 			if t.Failed() {
 				t.FailNow()
 			}
@@ -173,19 +186,28 @@ func TestCPU_NESTest(t *testing.T) {
 			if cpu.Stubbed {
 				t.Fail()
 			}
-			testFlags(t, cpu, testlog[i+1])
-			if cpu.X != testlog[i+1].X {
-				t.Errorf("X register mismatch: expected %02X, got %02X", testlog[i+1].X, cpu.X)
+
+			l1 := testlog[i+1]
+			testFlags(t, cpu, l1)
+			if cpu.X != l1.X {
+				t.Errorf("X register mismatch: expected %02X, got %02X", l1.X, cpu.X)
 			}
-			if cpu.Y != testlog[i+1].Y {
-				t.Errorf("Y register mismatch: expected %02X, got %02X", testlog[i+1].Y, cpu.Y)
+			if cpu.Y != l1.Y {
+				t.Errorf("Y register mismatch: expected %02X, got %02X", l1.Y, cpu.Y)
 			}
-			if cpu.SP != testlog[i+1].SP {
-				t.Errorf("SP register mismatch: expected %02X, got %02X", testlog[i+1].SP, cpu.SP)
+			if cpu.SP != l1.SP {
+				t.Errorf("SP register mismatch: expected %02X, got %02X", l1.SP, cpu.SP)
 			}
-			if cpu.A != testlog[i+1].A {
-				t.Errorf("A register mismatch: expected %02X, got %02X", testlog[i+1].A, cpu.A)
+			if cpu.A != l1.A {
+				t.Errorf("A register mismatch: expected %02X, got %02X", l1.A, cpu.A)
 			}
+			if cpu.PC != l1.Exec.PC {
+				t.Errorf("Target PC mismatch: expected %04X, got %04X", l1.Exec.PC, cpu.PC)
+			}
+			if cpu.Cycles != l1.Cycles {
+				t.Errorf("Cycles mismatch: expected %d, got %d", l1.Cycles, cpu.Cycles)
+			}
+
 		})
 	}
 

@@ -20,7 +20,7 @@ func Accumulator(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
 
 // Relative calculates the address for branch instructions based on the operand
 func Relative(cpu *CPU, operand1, operand2 uint8) (uint8, uint16) {
-	return operand1, uint16(int(cpu.PC) + int(int8(operand1))) // sign-extend the operand
+	return operand1, uint16(int(cpu.PC+2) + int(int8(operand1)))
 }
 
 // ZeroPage reads a byte from the zero page using the operand as the address

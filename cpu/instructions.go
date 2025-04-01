@@ -26,6 +26,9 @@ var Instructions = map[uint8]Instruction{
 	0x61: {Opcode: 0x61, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: AddWithCarryINDX},
 	0x71: {Opcode: 0x71, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: AddWithCarryINDY},
 
+	// BCS: Branch if Carry Set
+	0xB0: {Opcode: 0xB0, Size: 2, Mode: Relative, Cycles: 2, Execute: StubRelative},
+
 	// JMP: Jump
 	0x4C: {Opcode: 0x4C, Size: 3, Mode: Absolute, Cycles: 3, Execute: JumpABS},
 	0x6C: {Opcode: 0x6C, Size: 3, Mode: Indirect, Cycles: 5, Execute: JumpIND},
@@ -39,6 +42,9 @@ var Instructions = map[uint8]Instruction{
 	0xB6: {Opcode: 0xB6, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StubZeroPageY},
 	0xAE: {Opcode: 0xAE, Size: 3, Mode: Absolute, Cycles: 4, Execute: StubAbsolute},
 	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: StubAbsoluteY},
+
+	// SEC: Set Carry Flag
+	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: StubImplicit},
 
 	// STX: Store X Register
 	0x86: {Opcode: 0x86, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StubZeroPage},
