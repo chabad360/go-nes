@@ -17,38 +17,38 @@ func AddWithCarry(cpu *CPU, memory uint8) {
 
 func AddWithCarryIMM(cpu *CPU, operand1 uint8, operand2 uint8) {
 	memory, _ := Immediate(cpu, operand1, operand2)
-	AddWithCarry(cpu, memory)
+	AddWithCarry(cpu, memory())
 }
 func AddWithCarryZP(cpu *CPU, operand1 uint8, operand2 uint8) {
 	memory, _ := ZeroPage(cpu, operand1, operand2)
-	AddWithCarry(cpu, memory)
+	AddWithCarry(cpu, memory())
 }
 func AddWithCarryZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
 	memory, _ := Immediate(cpu, operand1, operand2)
-	AddWithCarry(cpu, memory)
+	AddWithCarry(cpu, memory())
 }
 
 func AddWithCarryABS(cpu *CPU, operand1 uint8, operand2 uint8) {
 	memory, _ := Absolute(cpu, operand1, operand2)
-	AddWithCarry(cpu, memory)
+	AddWithCarry(cpu, memory())
 }
 
 func AddWithCarryABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
 	memory, _ := AbsoluteX(cpu, operand1, operand2)
-	AddWithCarry(cpu, memory)
+	AddWithCarry(cpu, memory())
 }
 
 func AddWithCarryABSY(cpu *CPU, operand1 uint8, operand2 uint8) {
 	memory, _ := AbsoluteY(cpu, operand1, operand2)
-	AddWithCarry(cpu, memory)
+	AddWithCarry(cpu, memory())
 }
 
 func AddWithCarryINDX(cpu *CPU, operand1 uint8, operand2 uint8) {
 	memory, _ := IndexedIndirect(cpu, operand1, operand2)
-	AddWithCarry(cpu, memory)
+	AddWithCarry(cpu, memory())
 }
 
 func AddWithCarryINDY(cpu *CPU, operand1 uint8, operand2 uint8) {
 	memory, _ := IndirectIndexed(cpu, operand1, operand2)
-	AddWithCarry(cpu, memory)
+	AddWithCarry(cpu, memory())
 }
