@@ -36,6 +36,13 @@ var Instructions = map[uint8]Instruction{
 	0x21: {Opcode: 0x21, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: AndINDX},
 	0x31: {Opcode: 0x31, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: AndINDY},
 
+	// ASL: Arithmetic Shift Left
+	0x0A: {Opcode: 0x0A, Size: 1, Mode: Accumulator, Cycles: 2, Execute: ArithmeticShiftLeftA},
+	0x06: {Opcode: 0x06, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: ArithmeticShiftLeftZP},
+	0x16: {Opcode: 0x16, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: ArithmeticShiftLeftZPX},
+	0x0E: {Opcode: 0x0E, Size: 3, Mode: Absolute, Cycles: 6, Execute: ArithmeticShiftLeftABS},
+	0x1E: {Opcode: 0x1E, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: ArithmeticShiftLeftABSX},
+
 	// BCC: Branch if Carry Clear
 	0x90: {Opcode: 0x90, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfCarryClear},
 
@@ -146,6 +153,13 @@ var Instructions = map[uint8]Instruction{
 	0xAC: {Opcode: 0xAC, Size: 3, Mode: Absolute, Cycles: 4, Execute: LoadYABS},
 	0xBC: {Opcode: 0xBC, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: LoadYABSX},
 
+	// LSR: Logical Shift Right
+	0x4A: {Opcode: 0x4A, Size: 1, Mode: Accumulator, Cycles: 2, Execute: LogicalShiftRightA},
+	0x46: {Opcode: 0x46, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: LogicalShiftRightZP},
+	0x56: {Opcode: 0x56, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: LogicalShiftRightZPX},
+	0x4E: {Opcode: 0x4E, Size: 3, Mode: Absolute, Cycles: 6, Execute: LogicalShiftRightABS},
+	0x5E: {Opcode: 0x5E, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: LogicalShiftRightABSX},
+
 	// ORA: Logical OR
 	0x09: {Opcode: 0x09, Size: 2, Mode: Immediate, Cycles: 2, Execute: BitwiseOrIMM},
 	0x05: {Opcode: 0x05, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: BitwiseOrZP},
@@ -167,6 +181,9 @@ var Instructions = map[uint8]Instruction{
 
 	// PLP: Pull Processor Status
 	0x28: {Opcode: 0x28, Size: 1, Mode: Implicit, Cycles: 4, Execute: PullProcessorStatus},
+
+	// RTI: Return from Interrupt
+	0x40: {Opcode: 0x40, Size: 1, Mode: Implicit, Cycles: 6, Execute: ReturnFromInterrupt},
 
 	// RTS: Return from Subroutine
 	0x60: {Opcode: 0x60, Size: 1, Mode: Implicit, Cycles: 6, Execute: ReturnFromSubroutine},
@@ -235,7 +252,7 @@ func UNKNOWN(cpu *CPU, operand1 uint8, operand2 uint8) {
 	// Handle unknown opcode
 	// This could be a good place to log an error or set a flag
 	// For now, we'll just do nothing
-	value := cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
+	value := cpu.Mapper.Read(cpu, cpu.PC)
 
 	panic(fmt.Sprintf("Unknown opcode: %x at PC: %x", value, cpu.PC))
 }
@@ -247,7 +264,7 @@ func StubImmediate(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", "None",
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", "None",
 		"Value", operand1,
 	)
@@ -260,7 +277,7 @@ func StubImplicit(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", "None",
 		"Operand2", "None",
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", "None",
 		"Value", "None",
 	)
@@ -273,7 +290,7 @@ func StubAccumulator(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", "None",
 		"Operand2", "None",
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", "None",
 		"Value", cpu.A,
 	)
@@ -287,7 +304,7 @@ func StubRelative(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", "None",
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", address,
 		"Value", value,
 	)
@@ -301,7 +318,7 @@ func StubZeroPage(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", "None",
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", address,
 		"Value", value,
 	)
@@ -315,7 +332,7 @@ func StubZeroPageX(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", "None",
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", address,
 		"Value", value,
 	)
@@ -329,7 +346,7 @@ func StubZeroPageY(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", "None",
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", address,
 		"Value", value,
 	)
@@ -343,7 +360,7 @@ func StubAbsolute(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", operand2,
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", address,
 		"Value", value,
 	)
@@ -357,7 +374,7 @@ func StubAbsoluteX(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", operand2,
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", address,
 		"Value", value,
 	)
@@ -371,7 +388,7 @@ func StubAbsoluteY(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", operand2,
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", address,
 		"Value", value,
 	)
@@ -385,7 +402,7 @@ func StubIndirect(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", operand2,
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", uint16(operand2)<<8|uint16(operand1),
 		"Value", value2,
 	)
@@ -399,7 +416,7 @@ func StubIndexedIndirect(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", "None",
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", address,
 		"Value", value,
 	)
@@ -413,7 +430,7 @@ func StubIndirectIndexed(cpu *CPU, operand1 uint8, operand2 uint8) {
 		"PC", cpu.PC,
 		"Operand1", operand1,
 		"Operand2", "None",
-		"Opcode", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC),
+		"Opcode", cpu.Mapper.Read(cpu, cpu.PC),
 		"Address", address,
 		"Value", value,
 	)
