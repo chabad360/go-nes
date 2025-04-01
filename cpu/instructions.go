@@ -37,11 +37,11 @@ var Instructions = map[uint8]Instruction{
 	0x20: {Opcode: 0x20, Size: 3, Mode: Absolute, Cycles: 6, Execute: JumpToSubroutineABS},
 
 	// LDX: Load X Register
-	0xA2: {Opcode: 0xA2, Size: 2, Mode: Immediate, Cycles: 2, Execute: StubImmediate},
-	0xA6: {Opcode: 0xA6, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StubZeroPage},
-	0xB6: {Opcode: 0xB6, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StubZeroPageY},
-	0xAE: {Opcode: 0xAE, Size: 3, Mode: Absolute, Cycles: 4, Execute: StubAbsolute},
-	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: StubAbsoluteY},
+	0xA2: {Opcode: 0xA2, Size: 2, Mode: Immediate, Cycles: 2, Execute: LoadXIMM},
+	0xA6: {Opcode: 0xA6, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: LoadXZP},
+	0xB6: {Opcode: 0xB6, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: LoadXZPY},
+	0xAE: {Opcode: 0xAE, Size: 3, Mode: Absolute, Cycles: 4, Execute: LoadXABS},
+	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: LoadXABSY},
 
 	// SEC: Set Carry Flag
 	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: StubImplicit},
