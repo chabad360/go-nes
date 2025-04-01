@@ -59,7 +59,7 @@ var Instructions = map[uint8]Instruction{
 	0x6C: {Opcode: 0x6C, Size: 3, Mode: Indirect, Cycles: 5, Execute: JumpIND},
 
 	// JSR: Jump to Subroutine
-	0x20: {Opcode: 0x20, Size: 3, Mode: Absolute, Cycles: 6, Execute: JumpToSubroutineABS},
+	0x20: {Opcode: 0x20, Size: 3, Mode: Absolute, Cycles: 6, Execute: JumpToSubroutine},
 
 	// LDA: Load Accumulator
 	0xA9: {Opcode: 0xA9, Size: 2, Mode: Immediate, Cycles: 2, Execute: LoadAIMM},
@@ -77,6 +77,9 @@ var Instructions = map[uint8]Instruction{
 	0xB6: {Opcode: 0xB6, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: LoadXZPY},
 	0xAE: {Opcode: 0xAE, Size: 3, Mode: Absolute, Cycles: 4, Execute: LoadXABS},
 	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: LoadXABSY},
+
+	// RTS: Return from Subroutine
+	0x60: {Opcode: 0x60, Size: 1, Mode: Implicit, Cycles: 6, Execute: ReturnFromSubroutine},
 
 	// SEC: Set Carry Flag
 	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: SetCarry},
