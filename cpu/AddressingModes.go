@@ -146,10 +146,13 @@ func Indirect(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
 // IndexedIndirect reads a byte from an indirect address specified by the operand plus the X register
 func IndexedIndirect(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand1 + cpu.X)
+	cpu.Wait()
 	low := cpu.Mapper.Read(cpu, address%256)
+	cpu.Wait()
 
 	hAddr := (address + 1) % 256
 	high := cpu.Mapper.Read(cpu, hAddr)
+	cpu.Wait()
 
 	// Combine the high and low bytes to get the actual address
 	address = uint16(high)<<8 | uint16(low)

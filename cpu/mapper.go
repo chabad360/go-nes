@@ -13,7 +13,7 @@ type GenericMapper struct{}
 func (g *GenericMapper) Write(cpu *CPU, address uint16, value uint8) {
 	switch {
 	case address < 0x2000:
-		cpu.Memory[address%0x07FF] = value
+		cpu.Memory[address%0x0800] = value
 	case address < 0x4000:
 		// PPU registers
 	case address < 0x4018:
@@ -27,7 +27,7 @@ func (g *GenericMapper) Write(cpu *CPU, address uint16, value uint8) {
 func (g *GenericMapper) Read(cpu *CPU, address uint16) uint8 {
 	switch {
 	case address < 0x2000:
-		return cpu.Memory[address%0x07FF]
+		return cpu.Memory[address%0x0800]
 	case address < 0x4000:
 		// PPU registers
 	case address < 0x4018:

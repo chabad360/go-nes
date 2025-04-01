@@ -10,7 +10,7 @@ type CPU struct {
 	A, X, Y, SP         uint8
 	PC                  uint16
 	C, Z, I, D, B, V, N bool
-	Memory              [0x07FF]uint8
+	Memory              [0x0800]uint8
 
 	Mapper Mapper
 
@@ -36,7 +36,7 @@ func (cpu *CPU) PowerOn() {
 	cpu.V = false
 	cpu.N = false
 
-	cpu.Memory = [0x07FF]uint8{}
+	cpu.Memory = [0x0800]uint8{}
 }
 
 // Reset initializes the CPU to the reset state.
