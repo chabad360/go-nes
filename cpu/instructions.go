@@ -182,6 +182,20 @@ var Instructions = map[uint8]Instruction{
 	// PLP: Pull Processor Status
 	0x28: {Opcode: 0x28, Size: 1, Mode: Implicit, Cycles: 4, Execute: PullProcessorStatus},
 
+	// ROL: Rotate Left
+	0x2A: {Opcode: 0x2A, Size: 1, Mode: Accumulator, Cycles: 2, Execute: RotateLeftA},
+	0x26: {Opcode: 0x26, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: RotateLeftZP},
+	0x36: {Opcode: 0x36, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: RotateLeftZPX},
+	0x2E: {Opcode: 0x2E, Size: 3, Mode: Absolute, Cycles: 6, Execute: RotateLeftABS},
+	0x3E: {Opcode: 0x3E, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: RotateLeftABSX},
+
+	// ROR: Rotate Right
+	0x6A: {Opcode: 0x6A, Size: 1, Mode: Accumulator, Cycles: 2, Execute: RotateRightA},
+	0x66: {Opcode: 0x66, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: RotateRightZP},
+	0x76: {Opcode: 0x76, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: RotateRightZPX},
+	0x6E: {Opcode: 0x6E, Size: 3, Mode: Absolute, Cycles: 6, Execute: RotateRightABS},
+	0x7E: {Opcode: 0x7E, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: RotateRightABSX},
+
 	// RTI: Return from Interrupt
 	0x40: {Opcode: 0x40, Size: 1, Mode: Implicit, Cycles: 6, Execute: ReturnFromInterrupt},
 
