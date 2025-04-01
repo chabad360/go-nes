@@ -27,7 +27,7 @@ var Instructions = map[uint8]Instruction{
 	0x71: {Opcode: 0x71, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: AddWithCarryINDY},
 
 	// BCS: Branch if Carry Set
-	0xB0: {Opcode: 0xB0, Size: 2, Mode: Relative, Cycles: 2, Execute: StubRelative},
+	0xB0: {Opcode: 0xB0, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfCarrySet},
 
 	// JMP: Jump
 	0x4C: {Opcode: 0x4C, Size: 3, Mode: Absolute, Cycles: 3, Execute: JumpABS},
