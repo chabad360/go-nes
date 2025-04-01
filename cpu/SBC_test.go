@@ -33,6 +33,12 @@ func TestSubtractWithCarry(t *testing.T) {
 			memory: 0x80,
 			result: ResultState{A: 0x80, C: false, Z: false, N: true, V: true},
 		},
+		{
+			name:   "Signed Overflow 2",
+			cpu:    &CPU{A: 0x80, C: false},
+			memory: 0x00,
+			result: ResultState{A: 0x7f, C: true, Z: false, N: false, V: true},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

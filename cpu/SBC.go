@@ -11,7 +11,7 @@ func SubtractWithCarry(cpu *CPU, memory uint8) {
 	cpu.C = result&0x100 == 0
 	cpu.Z = uint8(result) == 0
 	cpu.N = result&0x80 != 0
-	cpu.V = (result^uint16(cpu.A))&(result&uint16(memory))&0x80 != 0
+	cpu.V = ((cpu.A^memory)&0x80 != 0) && ((cpu.A^uint8(result))&0x80 != 0)
 	cpu.A = uint8(result)
 }
 
