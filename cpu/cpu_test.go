@@ -162,7 +162,7 @@ func TestCPU_NESTest(t *testing.T) {
 
 			exec := cpu.Decode()
 			if _, exists := Instructions[exec.Opcode]; !exists {
-				t.Errorf("Encountered unknown opcode at %04X: %X,Expected: %X (%s), Args: %X %X (%s)",
+				t.Errorf("Encountered unknown opcode at %04X: %02X, Expected: %02X (%s), Args: %X %X (%s)",
 					exec.PC, exec.Opcode, l.Opcode, l.Operation, l.Operand1, l.Operand2, l.Args)
 				t.Fail()
 			}
