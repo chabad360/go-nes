@@ -272,11 +272,56 @@ var Instructions = map[uint8]Instruction{
 
 	// NOP
 	0xEA: {Opcode: 0xEA, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},
+	0x1A: {Opcode: 0x1A, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},  // *NOP
+	0x3A: {Opcode: 0x3A, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},  // *NOP
+	0x5A: {Opcode: 0x5A, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},  // *NOP
+	0x7A: {Opcode: 0x7A, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},  // *NOP
+	0xDA: {Opcode: 0xDA, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},  // *NOP
+	0xFA: {Opcode: 0xFA, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},  // *NOP
+	0x80: {Opcode: 0x80, Size: 2, Mode: Immediate, Cycles: 2, Execute: NOP}, // *NOP
+
+	// *NOP
+	0x04: {Opcode: 0x04, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: NOPZP},
+	0x44: {Opcode: 0x44, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: NOPZP},
+	0x64: {Opcode: 0x64, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: NOPZP},
+	0x14: {Opcode: 0x14, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: NOPZPX},
+	0x34: {Opcode: 0x34, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: NOPZPX},
+	0x54: {Opcode: 0x54, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: NOPZPX},
+	0x74: {Opcode: 0x74, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: NOPZPX},
+	0xD4: {Opcode: 0xD4, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: NOPZPX},
+	0xF4: {Opcode: 0xF4, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: NOPZPX},
+	0x0C: {Opcode: 0x0C, Size: 3, Mode: Absolute, Cycles: 4, Execute: NOPABS},
+	0x1C: {Opcode: 0x1C, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: NOPABSX},
+	0x3C: {Opcode: 0x3C, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: NOPABSX},
+	0x5C: {Opcode: 0x5C, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: NOPABSX},
+	0x7C: {Opcode: 0x7C, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: NOPABSX},
+	0xDC: {Opcode: 0xDC, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: NOPABSX},
+	0xFC: {Opcode: 0xFC, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: NOPABSX},
 }
 
 // NOP is a no-operation instruction
 func NOP(cpu *CPU, operand1 uint8, operand2 uint8) {
 	// No operation
+}
+
+func NOPZP(cpu *CPU, operand1 uint8, operand2 uint8) {
+	value, _ := ZeroPage(cpu, operand1, operand2)
+	value()
+}
+
+func NOPZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
+	value, _ := ZeroPageX(cpu, operand1, operand2)
+	value()
+}
+
+func NOPABS(cpu *CPU, operand1 uint8, operand2 uint8) {
+	value, _ := Absolute(cpu, operand1, operand2)
+	value()
+}
+
+func NOPABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
+	value, _ := AbsoluteX(cpu, operand1, operand2)
+	value()
 }
 
 func UNKNOWN(cpu *CPU, operand1 uint8, operand2 uint8) {
