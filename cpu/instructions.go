@@ -103,6 +103,9 @@ var Instructions = map[uint8]Instruction{
 	0x41: {Opcode: 0x41, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: BitwiseXORINDX},
 	0x51: {Opcode: 0x51, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: BitwiseXORINDY},
 
+	// INY: Increment Y Register
+	0xC8: {Opcode: 0xC8, Size: 1, Mode: Implicit, Cycles: 2, Execute: IncrementY},
+
 	// JMP: Jump
 	0x4C: {Opcode: 0x4C, Size: 3, Mode: Absolute, Cycles: 3, Execute: JumpABS},
 	0x6C: {Opcode: 0x6C, Size: 3, Mode: Indirect, Cycles: 5, Execute: JumpIND},
