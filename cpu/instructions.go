@@ -42,6 +42,16 @@ var Instructions = map[uint8]Instruction{
 	// JSR: Jump to Subroutine
 	0x20: {Opcode: 0x20, Size: 3, Mode: Absolute, Cycles: 6, Execute: JumpToSubroutineABS},
 
+	// LDA: Load Accumulator
+	0xA9: {Opcode: 0xA9, Size: 2, Mode: Immediate, Cycles: 2, Execute: LoadAIMM},
+	0xA5: {Opcode: 0xA5, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: LoadAZP},
+	0xB5: {Opcode: 0xB5, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: LoadAZPX},
+	0xAD: {Opcode: 0xAD, Size: 3, Mode: Absolute, Cycles: 4, Execute: LoadAABS},
+	0xBD: {Opcode: 0xBD, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: LoadAABSX},
+	0xB9: {Opcode: 0xB9, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: LoadAABSY},
+	0xA1: {Opcode: 0xA1, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: LoadAINDX},
+	0xB1: {Opcode: 0xB1, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: LoadAINDY},
+
 	// LDX: Load X Register
 	0xA2: {Opcode: 0xA2, Size: 2, Mode: Immediate, Cycles: 2, Execute: LoadXIMM},
 	0xA6: {Opcode: 0xA6, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: LoadXZP},
