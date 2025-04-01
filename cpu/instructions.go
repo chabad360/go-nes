@@ -44,7 +44,7 @@ var Instructions = map[uint8]Instruction{
 	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: LoadXABSY},
 
 	// SEC: Set Carry Flag
-	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: StubImplicit},
+	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: SetCarry},
 
 	// STX: Store X Register
 	0x86: {Opcode: 0x86, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StoreXZP},
