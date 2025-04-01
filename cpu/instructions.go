@@ -93,6 +93,12 @@ var Instructions = map[uint8]Instruction{
 	0xC4: {Opcode: 0xC4, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: CompareYZP},
 	0xCC: {Opcode: 0xCC, Size: 3, Mode: Absolute, Cycles: 4, Execute: CompareYABS},
 
+	// DEX: Decrement X Register
+	0xCA: {Opcode: 0xCA, Size: 1, Mode: Implicit, Cycles: 2, Execute: DecrementX},
+
+	// DEY: Decrement Y Register
+	0x88: {Opcode: 0x88, Size: 1, Mode: Implicit, Cycles: 2, Execute: DecrementY},
+
 	// EOR: Exclusive OR
 	0x49: {Opcode: 0x49, Size: 2, Mode: Immediate, Cycles: 2, Execute: BitwiseXORIMM},
 	0x45: {Opcode: 0x45, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: BitwiseXORZP},
@@ -102,6 +108,9 @@ var Instructions = map[uint8]Instruction{
 	0x59: {Opcode: 0x59, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: BitwiseXORABSY},
 	0x41: {Opcode: 0x41, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: BitwiseXORINDX},
 	0x51: {Opcode: 0x51, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: BitwiseXORINDY},
+
+	// INX: Increment X Register
+	0xE8: {Opcode: 0xE8, Size: 1, Mode: Implicit, Cycles: 2, Execute: IncrementX},
 
 	// INY: Increment Y Register
 	0xC8: {Opcode: 0xC8, Size: 1, Mode: Implicit, Cycles: 2, Execute: IncrementY},
