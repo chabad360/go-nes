@@ -70,6 +70,9 @@ var Instructions = map[uint8]Instruction{
 	// CLD: Clear Decimal Flag
 	0xD8: {Opcode: 0xD8, Size: 1, Mode: Implicit, Cycles: 2, Execute: ClearDecimal},
 
+	// CLV: Clear Overflow Flag
+	0xB8: {Opcode: 0xB8, Size: 1, Mode: Implicit, Cycles: 2, Execute: ClearOverflow},
+
 	// CMP: Compare
 	0xC9: {Opcode: 0xC9, Size: 2, Mode: Immediate, Cycles: 2, Execute: CompareIMM},
 	0xC5: {Opcode: 0xC5, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: CompareZP},
