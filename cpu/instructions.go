@@ -42,6 +42,12 @@ var Instructions = map[uint8]Instruction{
 	// BNE: Branch if Not Equal
 	0xD0: {Opcode: 0xD0, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfNotEqual},
 
+	// BVC: Branch if Overflow Clear
+	0x50: {Opcode: 0x50, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfOverflowClear},
+
+	// BVS: Branch if Overflow Set
+	0x70: {Opcode: 0x70, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfOverflowSet},
+
 	// CLC: Clear Carry Flag
 	0x18: {Opcode: 0x18, Size: 1, Mode: Implicit, Cycles: 2, Execute: ClearCarry},
 
