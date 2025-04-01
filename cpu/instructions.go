@@ -204,6 +204,25 @@ var Instructions = map[uint8]Instruction{
 	0x96: {Opcode: 0x96, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StoreXZPY},
 	0x8E: {Opcode: 0x8E, Size: 3, Mode: Absolute, Cycles: 4, Execute: StoreXABS},
 
+	// TAX: Transfer Accumulator to X Register
+	0xAA: {Opcode: 0xAA, Size: 1, Mode: Implicit, Cycles: 2, Execute: TransferAToX},
+
+	// TAY: Transfer Accumulator to Y Register
+	0xA8: {Opcode: 0xA8, Size: 1, Mode: Implicit, Cycles: 2, Execute: TransferAToY},
+
+	// TSX: Transfer Stack Pointer to X Register
+	0xBA: {Opcode: 0xBA, Size: 1, Mode: Implicit, Cycles: 2, Execute: TransferStackToX},
+
+	// TXA: Transfer X Register to Accumulator
+	0x8A: {Opcode: 0x8A, Size: 1, Mode: Implicit, Cycles: 2, Execute: TransferXToA},
+
+	// TXS: Transfer X Register to Stack Pointer
+	0x9A: {Opcode: 0x9A, Size: 1, Mode: Implicit, Cycles: 2, Execute: TransferXToStack},
+
+	// TYA: Transfer Y Register to Accumulator
+	0x98: {Opcode: 0x98, Size: 1, Mode: Implicit, Cycles: 2, Execute: TransferYToA},
+
+	// NOP
 	0xEA: {Opcode: 0xEA, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},
 }
 
