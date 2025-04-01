@@ -78,6 +78,12 @@ var Instructions = map[uint8]Instruction{
 	0xAE: {Opcode: 0xAE, Size: 3, Mode: Absolute, Cycles: 4, Execute: LoadXABS},
 	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: LoadXABSY},
 
+	// PHP: Push Processor Status
+	0x08: {Opcode: 0x08, Size: 1, Mode: Implicit, Cycles: 3, Execute: PushProcessorStatus},
+
+	// PLA: Pull Accumulator
+	0x68: {Opcode: 0x68, Size: 1, Mode: Implicit, Cycles: 4, Execute: PullA},
+
 	// RTS: Return from Subroutine
 	0x60: {Opcode: 0x60, Size: 1, Mode: Implicit, Cycles: 6, Execute: ReturnFromSubroutine},
 
