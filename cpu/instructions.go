@@ -49,6 +49,9 @@ var Instructions = map[uint8]Instruction{
 	0x24: {Opcode: 0x24, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: BitTestZP},
 	0x2C: {Opcode: 0x2C, Size: 3, Mode: Absolute, Cycles: 4, Execute: BitTestABS},
 
+	// BMI: Branch if Minus
+	0x30: {Opcode: 0x30, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfMinus},
+
 	// BNE: Branch if Not Equal
 	0xD0: {Opcode: 0xD0, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfNotEqual},
 
@@ -100,6 +103,16 @@ var Instructions = map[uint8]Instruction{
 	0xB6: {Opcode: 0xB6, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: LoadXZPY},
 	0xAE: {Opcode: 0xAE, Size: 3, Mode: Absolute, Cycles: 4, Execute: LoadXABS},
 	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: LoadXABSY},
+
+	// ORA: Logical OR
+	0x09: {Opcode: 0x09, Size: 2, Mode: Immediate, Cycles: 2, Execute: BitwiseOrIMM},
+	0x05: {Opcode: 0x05, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: BitwiseOrZP},
+	0x15: {Opcode: 0x15, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: BitwiseOrZPX},
+	0x0D: {Opcode: 0x0D, Size: 3, Mode: Absolute, Cycles: 4, Execute: BitwiseOrABS},
+	0x1D: {Opcode: 0x1D, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: BitwiseOrABSX},
+	0x19: {Opcode: 0x19, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: BitwiseOrABSY},
+	0x01: {Opcode: 0x01, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: BitwiseOrINDX},
+	0x11: {Opcode: 0x11, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: BitwiseOrINDY},
 
 	// PHA: Push Accumulator
 	0x48: {Opcode: 0x48, Size: 1, Mode: Implicit, Cycles: 3, Execute: PushA},
