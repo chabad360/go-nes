@@ -26,6 +26,16 @@ var Instructions = map[uint8]Instruction{
 	0x61: {Opcode: 0x61, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: AddWithCarryINDX},
 	0x71: {Opcode: 0x71, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: AddWithCarryINDY},
 
+	// AND: Logical AND
+	0x29: {Opcode: 0x29, Size: 2, Mode: Immediate, Cycles: 2, Execute: AndIMM},
+	0x25: {Opcode: 0x25, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: AndZP},
+	0x35: {Opcode: 0x35, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: AndZPX},
+	0x2D: {Opcode: 0x2D, Size: 3, Mode: Absolute, Cycles: 4, Execute: AndABS},
+	0x3D: {Opcode: 0x3D, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: AndABSX},
+	0x39: {Opcode: 0x39, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: AndABSY},
+	0x21: {Opcode: 0x21, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: AndINDX},
+	0x31: {Opcode: 0x31, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: AndINDY},
+
 	// BCC: Branch if Carry Clear
 	0x90: {Opcode: 0x90, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfCarryClear},
 
