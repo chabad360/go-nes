@@ -6,8 +6,8 @@ func BitTest(cpu *CPU, memory uint8) {
 	cpu.Wait()
 
 	cpu.Z = result == 0
-	cpu.N = result&0x80 != 0
 	cpu.V = memory&0x40 != 0
+	cpu.N = memory&0x80 != 0
 }
 
 func BitTestZP(cpu *CPU, operand1 uint8, operand2 uint8) {
