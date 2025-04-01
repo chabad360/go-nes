@@ -35,6 +35,10 @@ var Instructions = map[uint8]Instruction{
 	// BEQ: Branch if Equal
 	0xF0: {Opcode: 0xF0, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfEqual},
 
+	// BIT: Bit Test
+	0x24: {Opcode: 0x24, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: BitTestZP},
+	0x2C: {Opcode: 0x2C, Size: 3, Mode: Absolute, Cycles: 4, Execute: BitTestABS},
+
 	// BNE: Branch if Not Equal
 	0xD0: {Opcode: 0xD0, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfNotEqual},
 
