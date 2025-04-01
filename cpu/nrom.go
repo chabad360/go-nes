@@ -7,11 +7,11 @@ type NROM struct {
 	CHRROM []uint8
 }
 
-func (n *NROM) Write(cpu *CPU, clock <-chan int, address uint16, value uint8) {
-	n.GenericMapper.Write(cpu, clock, address, value) // NROM has no special write behavior
+func (n *NROM) Write(cpu *CPU, address uint16, value uint8) {
+	n.GenericMapper.Write(cpu, address, value) // NROM has no special write behavior
 }
 
-func (n *NROM) Read(cpu *CPU, clock <-chan int, address uint16) uint8 {
+func (n *NROM) Read(cpu *CPU, address uint16) uint8 {
 	if address >= 0x8000 {
 		if address < 0xBFFF {
 			return n.PRGROM[address-0x8000]
@@ -23,5 +23,5 @@ func (n *NROM) Read(cpu *CPU, clock <-chan int, address uint16) uint8 {
 			return n.PRGROM[address]
 		}
 	}
-	return n.GenericMapper.Read(cpu, clock, address)
+	return n.GenericMapper.Read(cpu, address)
 }

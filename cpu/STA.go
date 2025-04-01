@@ -2,7 +2,7 @@ package cpu
 
 // StoreA memory = A
 func StoreA(cpu *CPU, memory uint16) {
-	cpu.Mapper.Write(cpu, cpu.Clock, memory, cpu.A)
+	cpu.Mapper.Write(cpu, memory, cpu.A)
 	cpu.Wait()
 }
 

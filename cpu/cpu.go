@@ -56,7 +56,7 @@ type Exec struct {
 
 // Decode fetches the next opcode from memory and returns the corresponding instruction.
 func (cpu *CPU) Decode() *Exec {
-	opcode := cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
+	opcode := cpu.Mapper.Read(cpu, cpu.PC)
 	cpu.Wait()
 	instruction, exists := Instructions[opcode]
 	if !exists {
@@ -83,12 +83,12 @@ func (cpu *CPU) Decode() *Exec {
 // Fetch retrieves the operands for the instruction based on its size.
 func (cpu *CPU) Fetch(exec *Exec) {
 	if exec.Instruction.Size >= 2 {
-		exec.Operand1 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
+		exec.Operand1 = cpu.Mapper.Read(cpu, cpu.PC)
 		cpu.PC++
 		// We don't need to wait, because the 6502 always prefetches the next byte
 	}
 	if exec.Instruction.Size == 3 {
-		exec.Operand2 = cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC)
+		exec.Operand2 = cpu.Mapper.Read(cpu, cpu.PC)
 		cpu.PC++
 		cpu.Wait()
 	}
@@ -137,14 +137,16 @@ func (cpu *CPU) Execute(exec *Exec) {
 
 // Push pushes a value onto the stack.
 func (cpu *CPU) Push(value uint8) {
-	cpu.Mapper.Write(cpu, cpu.Clock, 0x0100+uint16(cpu.SP), value)
+	cpu.Mapper.Write(cpu, 0x0100+uint16(cpu.SP), value)
 	cpu.SP--
+	cpu.Wait()
 }
 
 // Pop pops a value from the stack.
 func (cpu *CPU) Pop() uint8 {
 	cpu.SP++
-	value := cpu.Mapper.Read(cpu, cpu.Clock, 0x0100+uint16(cpu.SP))
+	value := cpu.Mapper.Read(cpu, 0x0100+uint16(cpu.SP))
+	cpu.Wait()
 	return value
 }
 
@@ -178,4 +180,14 @@ func (cpu *CPU) Flags() uint8 {
 		flags |= 0x80
 	}
 	return flags
+}
+
+// FromFlags sets the CPU flags based on the provided byte.
+func (cpu *CPU) FromFlags(flags uint8) {
+	cpu.N = flags&0x80 != 0
+	cpu.V = flags&0x40 != 0
+	cpu.D = flags&0x08 != 0
+	cpu.I = flags&0x04 != 0
+	cpu.Z = flags&0x02 != 0
+	cpu.C = flags&0x01 != 0
 }

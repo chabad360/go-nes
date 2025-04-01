@@ -27,7 +27,7 @@ func logInstruction(cpu *CPU, mode string, operand1, operand2 uint8, address uin
 	if cpu.Log {
 		slog.Info(mode+" Mode Instruction",
 			"PC", fmt.Sprintf("0x%04X", cpu.PC-uint16(size)),
-			"Opcode", fmt.Sprintf("0x%02X", cpu.Mapper.Read(cpu, cpu.Clock, cpu.PC-uint16(size))),
+			"Opcode", fmt.Sprintf("0x%02X", cpu.Mapper.Read(cpu, cpu.PC-uint16(size))),
 			"Operand1", fmt.Sprintf("0x%02X", operand1),
 			"Operand2", fmt.Sprintf("0x%02X", operand2),
 			"Address", fmt.Sprintf("0x%04X", address),
@@ -62,7 +62,7 @@ func Relative(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
 
 // ZeroPage reads a byte from the zero page using the operand as the address
 func ZeroPage(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
-	val := cpu.Mapper.Read(cpu, cpu.Clock, uint16(operand1))
+	val := cpu.Mapper.Read(cpu, uint16(operand1))
 	address = uint16(operand1)
 	logInstruction(cpu, "Zero Page", operand1, operand2, address, val, 2)
 	value = GuardValue(cpu, val)
@@ -72,7 +72,7 @@ func ZeroPage(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uin
 // ZeroPageX reads a byte from the zero page using the operand plus the X register as the address
 func ZeroPageX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand1+cpu.X) % 256
-	val := cpu.Mapper.Read(cpu, cpu.Clock, address)
+	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Zero Page X", operand1, operand2, address, val, 2)
 	value = GuardValue(cpu, val)
 	return
@@ -81,7 +81,7 @@ func ZeroPageX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address ui
 // ZeroPageY reads a byte from the zero page using the operand plus the Y register as the address
 func ZeroPageY(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand1+cpu.Y) % 256
-	val := cpu.Mapper.Read(cpu, cpu.Clock, address)
+	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Zero Page Y", operand1, operand2, address, val, 2)
 	value = GuardValue(cpu, val)
 	return
@@ -90,7 +90,7 @@ func ZeroPageY(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address ui
 // Absolute reads a byte from the absolute 16-bit address specified by the operand
 func Absolute(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand2)<<8 | uint16(operand1)
-	val := cpu.Mapper.Read(cpu, cpu.Clock, address)
+	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Absolute", operand1, operand2, address, val, 3)
 	value = GuardValue(cpu, val)
 	return
@@ -100,7 +100,7 @@ func Absolute(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uin
 func AbsoluteX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand2)<<8 | uint16(operand1)
 	address += uint16(cpu.X)
-	val := cpu.Mapper.Read(cpu, cpu.Clock, address)
+	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Absolute X", operand1, operand2, address, val, 3)
 	value = GuardValue(cpu, val)
 	return
@@ -110,7 +110,7 @@ func AbsoluteX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address ui
 func AbsoluteY(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand2)<<8 | uint16(operand1)
 	address += uint16(cpu.Y)
-	val := cpu.Mapper.Read(cpu, cpu.Clock, address)
+	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Absolute Y Mode", operand1, operand2, address, val, 3)
 	value = GuardValue(cpu, val)
 	return
@@ -121,21 +121,21 @@ func Indirect(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
 	address := uint16(operand2)<<8 | uint16(operand1)
 
 	// Read the low byte and high byte from the address
-	low := cpu.Mapper.Read(cpu, cpu.Clock, address)
+	low := cpu.Mapper.Read(cpu, address)
 
 	hAddr := address + 1
 	if address&0x00FF == 0x00FF {
 		hAddr = address & 0xFF00 // wrap around for page boundary bug
 	}
-	high := cpu.Mapper.Read(cpu, cpu.Clock, hAddr)
+	high := cpu.Mapper.Read(cpu, hAddr)
 
 	// Combine the high and low bytes to get the actual address
 	address = uint16(high)<<8 | uint16(low)
 
-	low = cpu.Mapper.Read(cpu, cpu.Clock, address)
+	low = cpu.Mapper.Read(cpu, address)
 
 	hAddr = address + 1
-	high = cpu.Mapper.Read(cpu, cpu.Clock, hAddr)
+	high = cpu.Mapper.Read(cpu, hAddr)
 
 	logInstruction(cpu, "Indirect", operand1, operand2, uint16(operand2)<<8|uint16(operand1), low, 3)
 
@@ -146,15 +146,15 @@ func Indirect(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
 // IndexedIndirect reads a byte from an indirect address specified by the operand plus the X register
 func IndexedIndirect(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand1 + cpu.X)
-	low := cpu.Mapper.Read(cpu, cpu.Clock, address%256)
+	low := cpu.Mapper.Read(cpu, address%256)
 
 	hAddr := (address + 1) % 256
-	high := cpu.Mapper.Read(cpu, cpu.Clock, hAddr)
+	high := cpu.Mapper.Read(cpu, hAddr)
 
 	// Combine the high and low bytes to get the actual address
 	address = uint16(high)<<8 | uint16(low)
 
-	val := cpu.Mapper.Read(cpu, cpu.Clock, address)
+	val := cpu.Mapper.Read(cpu, address)
 
 	logInstruction(cpu, "Indexed Indirect", operand1, operand2, address, val, 3)
 	value = GuardValue(cpu, val)
@@ -164,10 +164,10 @@ func IndexedIndirect(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, addr
 // IndirectIndexed reads a byte from an indirect address specified by the operand plus the Y register
 func IndirectIndexed(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand1)
-	low := cpu.Mapper.Read(cpu, cpu.Clock, address)
+	low := cpu.Mapper.Read(cpu, address)
 
 	hAddr := address + 1
-	high := cpu.Mapper.Read(cpu, cpu.Clock, hAddr)
+	high := cpu.Mapper.Read(cpu, hAddr)
 
 	// Combine the high and low bytes to get the actual address
 	address = uint16(high)<<8 | uint16(low)
@@ -175,7 +175,7 @@ func IndirectIndexed(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, addr
 	// Add the Y register to the address
 	address += uint16(cpu.Y)
 
-	val := cpu.Mapper.Read(cpu, cpu.Clock, address)
+	val := cpu.Mapper.Read(cpu, address)
 
 	logInstruction(cpu, "Indirect Indexed", operand1, operand2, address, val, 3)
 	value = GuardValue(cpu, val)
