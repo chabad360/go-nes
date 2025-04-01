@@ -64,6 +64,9 @@ var Instructions = map[uint8]Instruction{
 	// CLC: Clear Carry Flag
 	0x18: {Opcode: 0x18, Size: 1, Mode: Implicit, Cycles: 2, Execute: ClearCarry},
 
+	// CLD: Clear Decimal Flag
+	0xD8: {Opcode: 0xD8, Size: 1, Mode: Implicit, Cycles: 2, Execute: ClearDecimal},
+
 	// CMP: Compare
 	0xC9: {Opcode: 0xC9, Size: 2, Mode: Immediate, Cycles: 2, Execute: CompareIMM},
 	0xC5: {Opcode: 0xC5, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: CompareZP},
@@ -98,11 +101,17 @@ var Instructions = map[uint8]Instruction{
 	0xAE: {Opcode: 0xAE, Size: 3, Mode: Absolute, Cycles: 4, Execute: LoadXABS},
 	0xBE: {Opcode: 0xBE, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: LoadXABSY},
 
+	// PHA: Push Accumulator
+	0x48: {Opcode: 0x48, Size: 1, Mode: Implicit, Cycles: 3, Execute: PushA},
+
 	// PHP: Push Processor Status
 	0x08: {Opcode: 0x08, Size: 1, Mode: Implicit, Cycles: 3, Execute: PushProcessorStatus},
 
 	// PLA: Pull Accumulator
 	0x68: {Opcode: 0x68, Size: 1, Mode: Implicit, Cycles: 4, Execute: PullA},
+
+	// PLP: Pull Processor Status
+	0x28: {Opcode: 0x28, Size: 1, Mode: Implicit, Cycles: 4, Execute: PullProcessorStatus},
 
 	// RTS: Return from Subroutine
 	0x60: {Opcode: 0x60, Size: 1, Mode: Implicit, Cycles: 6, Execute: ReturnFromSubroutine},
