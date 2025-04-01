@@ -24,7 +24,7 @@ func AddWithCarryZP(cpu *CPU, operand1 uint8, operand2 uint8) {
 	AddWithCarry(cpu, memory())
 }
 func AddWithCarryZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := Immediate(cpu, operand1, operand2)
+	memory, _ := ZeroPageX(cpu, operand1, operand2)
 	AddWithCarry(cpu, memory())
 }
 

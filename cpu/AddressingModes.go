@@ -72,6 +72,7 @@ func ZeroPage(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uin
 // ZeroPageX reads a byte from the zero page using the operand plus the X register as the address
 func ZeroPageX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand1+cpu.X) % 256
+	cpu.Wait()
 	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Zero Page X", operand1, operand2, address, val, 2)
 	value = GuardValue(cpu, val)
@@ -81,6 +82,7 @@ func ZeroPageX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address ui
 // ZeroPageY reads a byte from the zero page using the operand plus the Y register as the address
 func ZeroPageY(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand1+cpu.Y) % 256
+	cpu.Wait()
 	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Zero Page Y", operand1, operand2, address, val, 2)
 	value = GuardValue(cpu, val)
@@ -99,7 +101,13 @@ func Absolute(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uin
 // AbsoluteX reads a byte from the absolute address specified by the operand plus the X register
 func AbsoluteX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand2)<<8 | uint16(operand1)
+
+	a := address & 0xFF00
 	address += uint16(cpu.X)
+	if a != address&0xFF00 {
+		cpu.Wait()
+	}
+
 	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Absolute X", operand1, operand2, address, val, 3)
 	value = GuardValue(cpu, val)
@@ -109,7 +117,13 @@ func AbsoluteX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address ui
 // AbsoluteY reads a byte from the absolute address specified by the operand plus the Y register
 func AbsoluteY(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand2)<<8 | uint16(operand1)
+
+	a := address & 0xFF00
 	address += uint16(cpu.Y)
+	if a != address&0xFF00 {
+		cpu.Wait()
+	}
+
 	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Absolute Y Mode", operand1, operand2, address, val, 3)
 	value = GuardValue(cpu, val)
@@ -120,27 +134,20 @@ func AbsoluteY(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address ui
 func Indirect(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
 	address := uint16(operand2)<<8 | uint16(operand1)
 
-	// Read the low byte and high byte from the address
 	low := cpu.Mapper.Read(cpu, address)
+	cpu.Wait()
 
 	hAddr := address + 1
 	if address&0x00FF == 0x00FF {
 		hAddr = address & 0xFF00 // wrap around for page boundary bug
 	}
 	high := cpu.Mapper.Read(cpu, hAddr)
+	cpu.Wait()
 
 	// Combine the high and low bytes to get the actual address
 	address = uint16(high)<<8 | uint16(low)
-
-	low = cpu.Mapper.Read(cpu, address)
-
-	hAddr = address + 1
-	high = cpu.Mapper.Read(cpu, hAddr)
-
-	logInstruction(cpu, "Indirect", operand1, operand2, uint16(operand2)<<8|uint16(operand1), low, 3)
-
-	// Return the value at the indirect address
-	return UnguardedValue(low), uint16(high)<<8 | uint16(low)
+	logInstruction(cpu, "Indirect", operand1, operand2, uint16(operand2)<<8|uint16(operand1), uint8(address), 3)
+	return UnguardedValue(low), address
 }
 
 // IndexedIndirect reads a byte from an indirect address specified by the operand plus the X register
@@ -168,15 +175,24 @@ func IndexedIndirect(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, addr
 func IndirectIndexed(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
 	address = uint16(operand1)
 	low := cpu.Mapper.Read(cpu, address)
+	cpu.Wait()
 
-	hAddr := address + 1
+	hAddr := (address + 1) % 256
+	if hAddr < address {
+		cpu.Wait()
+	}
 	high := cpu.Mapper.Read(cpu, hAddr)
+	cpu.Wait()
 
 	// Combine the high and low bytes to get the actual address
 	address = uint16(high)<<8 | uint16(low)
 
 	// Add the Y register to the address
+	a := address
 	address += uint16(cpu.Y)
+	if a > address {
+		cpu.Wait()
+	}
 
 	val := cpu.Mapper.Read(cpu, address)
 

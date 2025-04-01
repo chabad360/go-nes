@@ -22,12 +22,20 @@ func StoreAABS(cpu *CPU, operand1 uint8, operand2 uint8) {
 }
 
 func StoreAABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cyc := cpu.Cycles + 1
 	_, address := AbsoluteX(cpu, operand1, operand2)
+	if cyc > cpu.Cycles {
+		cpu.Wait()
+	}
 	StoreA(cpu, address)
 }
 
 func StoreAABSY(cpu *CPU, operand1 uint8, operand2 uint8) {
+	cyc := cpu.Cycles + 1
 	_, address := AbsoluteY(cpu, operand1, operand2)
+	if cyc > cpu.Cycles {
+		cpu.Wait()
+	}
 	StoreA(cpu, address)
 }
 
@@ -38,5 +46,6 @@ func StoreAINDX(cpu *CPU, operand1 uint8, operand2 uint8) {
 
 func StoreAINDY(cpu *CPU, operand1 uint8, operand2 uint8) {
 	_, address := IndirectIndexed(cpu, operand1, operand2)
+	cpu.Wait()
 	StoreA(cpu, address)
 }

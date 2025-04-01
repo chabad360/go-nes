@@ -11,6 +11,6 @@ func JumpABS(cpu *CPU, operand1 uint8, operand2 uint8) {
 }
 
 func JumpIND(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, value := Indirect(cpu, operand1, operand2)
-	Jump(cpu, value)
+	_, address := Indirect(cpu, operand1, operand2)
+	Jump(cpu, address)
 }

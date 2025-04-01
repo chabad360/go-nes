@@ -39,5 +39,6 @@ func ArithmeticShiftLeftABS(cpu *CPU, operand1 uint8, operand2 uint8) {
 
 func ArithmeticShiftLeftABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
 	value, address := AbsoluteX(cpu, operand1, operand2)
+	cpu.Wait()
 	ArithmeticShiftLeft(cpu, value(), address, false)
 }

@@ -44,5 +44,6 @@ func RotateRightABS(cpu *CPU, operand1 uint8, operand2 uint8) {
 
 func RotateRightABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
 	value, address := AbsoluteX(cpu, operand1, operand2)
+	cpu.Wait()
 	RotateRight(cpu, value(), address, false)
 }
