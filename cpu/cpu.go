@@ -97,11 +97,42 @@ func (cpu *CPU) Fetch(exec *Exec) {
 // Execute runs the instruction with the provided operands.
 func (cpu *CPU) Execute(exec *Exec) {
 	if cpu.Log {
-		slog.Debug(fmt.Sprintf("%x %x %x", exec.Instruction.Opcode, exec.Operand1, exec.Operand2))
+		slog.Info("CPU State Pre-Operation",
+			"A", fmt.Sprintf("0x%02X", cpu.A),
+			"X", fmt.Sprintf("0x%02X", cpu.X),
+			"Y", fmt.Sprintf("0x%02X", cpu.Y),
+			"SP", fmt.Sprintf("0x%02X", cpu.SP),
+			"PC", fmt.Sprintf("0x%04X", cpu.PC),
+			"C", cpu.C,
+			"Z", cpu.Z,
+			"I", cpu.I,
+			"D", cpu.D,
+			"B", cpu.B,
+			"V", cpu.V,
+			"N", cpu.N,
+			"Flags", fmt.Sprintf("0x%02X", cpu.Flags()),
+		)
 	}
 	cpu.Stubbed = false
 
 	exec.Instruction.Execute(cpu, exec.Operand1, exec.Operand2)
+	if cpu.Log {
+		slog.Info("CPU State Post-Operation",
+			"A", fmt.Sprintf("0x%02X", cpu.A),
+			"X", fmt.Sprintf("0x%02X", cpu.X),
+			"Y", fmt.Sprintf("0x%02X", cpu.Y),
+			"SP", fmt.Sprintf("0x%02X", cpu.SP),
+			"PC", fmt.Sprintf("0x%04X", cpu.PC),
+			"C", cpu.C,
+			"Z", cpu.Z,
+			"I", cpu.I,
+			"D", cpu.D,
+			"B", cpu.B,
+			"V", cpu.V,
+			"N", cpu.N,
+			"Flags", fmt.Sprintf("0x%02X", cpu.Flags()),
+		)
+	}
 }
 
 // Push pushes a value onto the stack.
@@ -120,4 +151,31 @@ func (cpu *CPU) Pop() uint8 {
 // Wait waits for the next clock cycle.
 func (cpu *CPU) Wait() {
 	cpu.Cycles = <-cpu.Clock
+}
+
+// Flags returns the current status flags as a byte.
+func (cpu *CPU) Flags() uint8 {
+	flags := uint8(0x30)
+	if cpu.C {
+		flags |= 0x01
+	}
+	if cpu.Z {
+		flags |= 0x02
+	}
+	if cpu.I {
+		flags |= 0x04
+	}
+	if cpu.D {
+		flags |= 0x08
+	}
+	if cpu.B {
+		flags |= 0x10
+	}
+	if cpu.V {
+		flags |= 0x40
+	}
+	if cpu.N {
+		flags |= 0x80
+	}
+	return flags
 }
