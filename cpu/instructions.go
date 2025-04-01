@@ -64,6 +64,16 @@ var Instructions = map[uint8]Instruction{
 	// CLC: Clear Carry Flag
 	0x18: {Opcode: 0x18, Size: 1, Mode: Implicit, Cycles: 2, Execute: ClearCarry},
 
+	// CMP: Compare
+	0xC9: {Opcode: 0xC9, Size: 2, Mode: Immediate, Cycles: 2, Execute: CompareIMM},
+	0xC5: {Opcode: 0xC5, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: CompareZP},
+	0xD5: {Opcode: 0xD5, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: CompareZPX},
+	0xCD: {Opcode: 0xCD, Size: 3, Mode: Absolute, Cycles: 4, Execute: CompareABS},
+	0xDD: {Opcode: 0xDD, Size: 3, Mode: AbsoluteX, Cycles: 4, Execute: CompareABSX},
+	0xD9: {Opcode: 0xD9, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: CompareABSY},
+	0xC1: {Opcode: 0xC1, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: CompareINDX},
+	0xD1: {Opcode: 0xD1, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: CompareINDY},
+
 	// JMP: Jump
 	0x4C: {Opcode: 0x4C, Size: 3, Mode: Absolute, Cycles: 3, Execute: JumpABS},
 	0x6C: {Opcode: 0x6C, Size: 3, Mode: Indirect, Cycles: 5, Execute: JumpIND},
