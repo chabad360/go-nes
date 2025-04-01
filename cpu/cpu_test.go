@@ -155,11 +155,14 @@ func TestCPU_NESTest(t *testing.T) {
 	cpu.PC = 0xC000 // Start at the beginning of nestest
 	for i := 0; i < len(testlog); i++ {
 		l := testlog[i]
+		if t.Failed() {
+			t.FailNow()
+		}
 		t.Run(fmt.Sprintf("%d: %X %s", i, l.Exec.PC, l.Operation), func(t *testing.T) {
 
 			exec := cpu.Decode()
 			if _, exists := Instructions[exec.Opcode]; !exists {
-				t.Errorf("Encountered unknown opcode at PC=%04X: %X,Expected: %X (%s), Args: %X %X (%s)",
+				t.Errorf("Encountered unknown opcode at %04X: %X,Expected: %X (%s), Args: %X %X (%s)",
 					exec.PC, exec.Opcode, l.Opcode, l.Operation, l.Operand1, l.Operand2, l.Args)
 				t.Fail()
 			}
