@@ -74,7 +74,7 @@ func (cpu *CPU) Decode() *Exec {
 		PC:          cpu.PC,
 	}
 
-	cpu.Wait()
+	cpu.Wait() // Fake fetch (in theory, a cycle accurate system should also load and store the next byte here)
 	cpu.PC++
 
 	return exec
