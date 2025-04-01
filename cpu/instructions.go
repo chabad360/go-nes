@@ -100,6 +100,12 @@ var Instructions = map[uint8]Instruction{
 	0xC4: {Opcode: 0xC4, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: CompareYZP},
 	0xCC: {Opcode: 0xCC, Size: 3, Mode: Absolute, Cycles: 4, Execute: CompareYABS},
 
+	// DEC: Decrement Memory
+	0xC6: {Opcode: 0xC6, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: DecrementZP},
+	0xD6: {Opcode: 0xD6, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: DecrementZPX},
+	0xCE: {Opcode: 0xCE, Size: 3, Mode: Absolute, Cycles: 6, Execute: DecrementABS},
+	0xDE: {Opcode: 0xDE, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: DecrementABSX},
+
 	// DEX: Decrement X Register
 	0xCA: {Opcode: 0xCA, Size: 1, Mode: Implicit, Cycles: 2, Execute: DecrementX},
 
@@ -115,6 +121,12 @@ var Instructions = map[uint8]Instruction{
 	0x59: {Opcode: 0x59, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: BitwiseXORABSY},
 	0x41: {Opcode: 0x41, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: BitwiseXORINDX},
 	0x51: {Opcode: 0x51, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: BitwiseXORINDY},
+
+	// INC: Increment Memory
+	0xE6: {Opcode: 0xE6, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: IncrementZP},
+	0xF6: {Opcode: 0xF6, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: IncrementZPX},
+	0xEE: {Opcode: 0xEE, Size: 3, Mode: Absolute, Cycles: 6, Execute: IncrementABS},
+	0xFE: {Opcode: 0xFE, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: IncrementABSX},
 
 	// INX: Increment X Register
 	0xE8: {Opcode: 0xE8, Size: 1, Mode: Implicit, Cycles: 2, Execute: IncrementX},
@@ -234,6 +246,11 @@ var Instructions = map[uint8]Instruction{
 	0x86: {Opcode: 0x86, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StoreXZP},
 	0x96: {Opcode: 0x96, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StoreXZPY},
 	0x8E: {Opcode: 0x8E, Size: 3, Mode: Absolute, Cycles: 4, Execute: StoreXABS},
+
+	// STY: Store Y Register
+	0x84: {Opcode: 0x84, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StoreYZP},
+	0x94: {Opcode: 0x94, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: StoreYZPX},
+	0x8C: {Opcode: 0x8C, Size: 3, Mode: Absolute, Cycles: 4, Execute: StoreYABS},
 
 	// TAX: Transfer Accumulator to X Register
 	0xAA: {Opcode: 0xAA, Size: 1, Mode: Implicit, Cycles: 2, Execute: TransferAToX},
