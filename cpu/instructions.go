@@ -47,9 +47,9 @@ var Instructions = map[uint8]Instruction{
 	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: StubImplicit},
 
 	// STX: Store X Register
-	0x86: {Opcode: 0x86, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StubZeroPage},
-	0x96: {Opcode: 0x96, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StubZeroPageY},
-	0x8E: {Opcode: 0x8E, Size: 3, Mode: Absolute, Cycles: 4, Execute: StubAbsolute},
+	0x86: {Opcode: 0x86, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StoreXZP},
+	0x96: {Opcode: 0x96, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StoreXZPY},
+	0x8E: {Opcode: 0x8E, Size: 3, Mode: Absolute, Cycles: 4, Execute: StoreXABS},
 
 	0xEA: {Opcode: 0xEA, Size: 1, Mode: Implicit, Cycles: 2, Execute: NOP},
 }

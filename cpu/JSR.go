@@ -8,6 +8,7 @@ func JumpToSubroutine(cpu *CPU, memory uint16) {
 	cpu.Push(uint8(returnAddress >> 8))
 	cpu.Wait()
 	cpu.PC = memory
+	cpu.Wait()
 }
 
 func JumpToSubroutineABS(cpu *CPU, operand1 uint8, operand2 uint8) {
