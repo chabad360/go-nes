@@ -84,6 +84,12 @@ var Instructions = map[uint8]Instruction{
 	// SEC: Set Carry Flag
 	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: SetCarry},
 
+	// SED: Set Decimal Flag
+	0xF8: {Opcode: 0xF8, Size: 1, Mode: Implicit, Cycles: 2, Execute: SetDecimal},
+
+	// SEI: Set Interrupt Disable
+	0x78: {Opcode: 0x78, Size: 1, Mode: Implicit, Cycles: 2, Execute: SetInterruptDisable},
+
 	// STA: Store Accumulator
 	0x85: {Opcode: 0x85, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StoreAZP},
 	0x95: {Opcode: 0x95, Size: 2, Mode: ZeroPageX, Cycles: 4, Execute: StoreAZPX},
