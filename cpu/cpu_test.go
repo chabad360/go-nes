@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sync"
 	"testing"
 
 	"go-nes/cart"
@@ -152,6 +153,7 @@ func TestCPU_NESTest(t *testing.T) {
 		}
 	}()
 
+	wg := &sync.WaitGroup{}
 	cpu.PC = 0xC000 // Start at the beginning of nestest
 	for i := 0; i < len(testlog); i++ {
 		l := testlog[i]
@@ -159,6 +161,8 @@ func TestCPU_NESTest(t *testing.T) {
 			t.FailNow()
 		}
 		t.Run(fmt.Sprintf("%d: %X %s", i, l.Exec.PC, l.Operation), func(t *testing.T) {
+			wg.Add(1)
+			defer wg.Done()
 
 			exec := cpu.Decode()
 			if _, exists := Instructions[exec.Opcode]; !exists {
@@ -190,6 +194,10 @@ func TestCPU_NESTest(t *testing.T) {
 				t.Fail()
 			}
 
+			if len(testlog) <= i+1 {
+				return
+			}
+
 			l1 := testlog[i+1]
 			testFlags(t, cpu, l1)
 			if cpu.X != l1.X {
@@ -210,8 +218,21 @@ func TestCPU_NESTest(t *testing.T) {
 			if cpu.Cycles != l1.Cycles {
 				t.Errorf("Cycles mismatch: expected %d, got %d", l1.Cycles, cpu.Cycles)
 			}
-
 		})
 	}
 
+	wg.Wait()
+	if t.Failed() {
+		t.FailNow()
+	}
+
+	result1 := cpu.Memory[0x0002]
+	result2 := cpu.Memory[0x0003]
+
+	if result1 != 0x00 {
+		t.Errorf("Expected 0x00 at address 0x0002, got 0x%02X", result1)
+	}
+	if result2 != 0x00 {
+		t.Errorf("Expected 0x00 at address 0x0003, got 0x%02X", result2)
+	}
 }
