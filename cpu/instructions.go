@@ -100,6 +100,15 @@ var Instructions = map[uint8]Instruction{
 	0xC4: {Opcode: 0xC4, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: CompareYZP},
 	0xCC: {Opcode: 0xCC, Size: 3, Mode: Absolute, Cycles: 4, Execute: CompareYABS},
 
+	// *DCP: Decrement Memory and Compare
+	0xC7: {Opcode: 0xC7, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: DecrementCompareZP},
+	0xD7: {Opcode: 0xD7, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: DecrementCompareZPX},
+	0xCF: {Opcode: 0xCF, Size: 3, Mode: Absolute, Cycles: 6, Execute: DecrementCompareABS},
+	0xDF: {Opcode: 0xDF, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: DecrementCompareABSX},
+	0xDB: {Opcode: 0xDB, Size: 3, Mode: AbsoluteY, Cycles: 7, Execute: DecrementCompareABSY},
+	0xC3: {Opcode: 0xC3, Size: 2, Mode: IndexedIndirect, Cycles: 8, Execute: DecrementCompareINDX},
+	0xD3: {Opcode: 0xD3, Size: 2, Mode: IndirectIndexed, Cycles: 8, Execute: DecrementCompareINDY},
+
 	// DEC: Decrement Memory
 	0xC6: {Opcode: 0xC6, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: DecrementZP},
 	0xD6: {Opcode: 0xD6, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: DecrementZPX},
@@ -223,6 +232,12 @@ var Instructions = map[uint8]Instruction{
 	// RTS: Return from Subroutine
 	0x60: {Opcode: 0x60, Size: 1, Mode: Implicit, Cycles: 6, Execute: ReturnFromSubroutine},
 
+	// *SAX: Store A and X Register
+	0x87: {Opcode: 0x87, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StoreAAndXZP},
+	0x97: {Opcode: 0x97, Size: 2, Mode: ZeroPageY, Cycles: 4, Execute: StoreAAndXZPY},
+	0x83: {Opcode: 0x83, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: StoreAAndXINDX},
+	0x8F: {Opcode: 0x8F, Size: 3, Mode: Absolute, Cycles: 4, Execute: StoreAAndXABS},
+
 	// SBC: Subtract with Carry
 	0xE9: {Opcode: 0xE9, Size: 2, Mode: Immediate, Cycles: 2, Execute: SubtractWithCarryIMM},
 	0xE5: {Opcode: 0xE5, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: SubtractWithCarryZP},
@@ -232,6 +247,9 @@ var Instructions = map[uint8]Instruction{
 	0xF9: {Opcode: 0xF9, Size: 3, Mode: AbsoluteY, Cycles: 4, Execute: SubtractWithCarryABSY},
 	0xE1: {Opcode: 0xE1, Size: 2, Mode: IndexedIndirect, Cycles: 6, Execute: SubtractWithCarryINDX},
 	0xF1: {Opcode: 0xF1, Size: 2, Mode: IndirectIndexed, Cycles: 5, Execute: SubtractWithCarryINDY},
+
+	// *SBC
+	0xEB: {Opcode: 0xEB, Size: 2, Mode: Immediate, Cycles: 2, Execute: SubtractWithCarryIMM},
 
 	// SEC: Set Carry Flag
 	0x38: {Opcode: 0x38, Size: 1, Mode: Implicit, Cycles: 2, Execute: SetCarry},

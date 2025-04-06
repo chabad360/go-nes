@@ -1,6 +1,6 @@
 package cpu
 
-// Compare A A - memory
+// Compare A - memory
 func Compare(cpu *CPU, memory uint8) {
 	result := int(cpu.A) - int(memory)
 
