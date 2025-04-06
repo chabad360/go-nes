@@ -2,6 +2,14 @@ package clock
 
 import "time"
 
+type Standard int
+
+const (
+	NTSC Standard = iota
+	PAL
+	Dendy
+)
+
 type Clock struct {
 	// Frequency of the clock in Hz
 	Frequency int
@@ -12,7 +20,14 @@ type Clock struct {
 }
 
 // New creates a new clock with the given frequency
-func New(frequency int) *Clock {
+func New(s Standard) *Clock {
+	var frequency int
+	switch s {
+	case NTSC:
+		frequency = 236250000 / 11
+	case PAL:
+		frequency = 26601712
+	}
 	return &Clock{
 		Frequency: frequency,
 		Ticks:     0,
@@ -25,16 +40,6 @@ func (c *Clock) AddListener(listener chan int) {
 	c.Listeners = append(c.Listeners, listener)
 }
 
-// RemoveListener removes a listener from the clock
-func (c *Clock) RemoveListener(listener chan int) {
-	for i, l := range c.Listeners {
-		if l == listener {
-			c.Listeners = append(c.Listeners[:i], c.Listeners[i+1:]...)
-			break
-		}
-	}
-}
-
 // Tick ticks the clock and notifies all listeners
 func (c *Clock) Tick() {
 	c.Ticks++
@@ -45,9 +50,12 @@ func (c *Clock) Tick() {
 
 // Start starts the clock
 func (c *Clock) Start() {
+	ticker := time.NewTicker(time.Second / time.Duration(c.Frequency))
+
 	for {
-		c.Tick()
-		// Sleep for the duration of one clock tick
-		time.Sleep(time.Second / time.Duration(c.Frequency))
+		select {
+		case <-ticker.C:
+			c.Tick()
+		}
 	}
 }

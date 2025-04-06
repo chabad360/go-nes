@@ -3,6 +3,7 @@ package cpu
 import (
 	"bufio"
 	"fmt"
+	"go-nes/clock"
 	"os"
 	"regexp"
 	"sync"
@@ -127,28 +128,28 @@ func TestCPU_NESTest(t *testing.T) {
 		t.Fatalf("Failed to load NESTest cartidge: %v", err)
 	}
 
-	clock := make(chan int)
+	c := make(chan int)
 
 	cpu := &CPU{
 		Mapper: &NROM{
 			PRGROM: cartidge.PRGROM,
 			CHRROM: cartidge.CHRROM,
 		},
-		Clock: clock,
-		Log:   true,
+		Clock:       c,
+		Log:         true,
+		ClockTiming: clock.NTSC,
 	}
 
 	cpu.PowerOn()
 
 	go func() {
 	clock:
-		for i := 8; ; i++ {
+		for i := 8 * 12; ; i++ {
 			select {
 			case <-t.Context().Done():
 				break clock
 			default:
-				clock <- i
-
+				c <- i
 			}
 		}
 	}()
@@ -235,4 +236,6 @@ func TestCPU_NESTest(t *testing.T) {
 	if result2 != 0x00 {
 		t.Errorf("Expected 0x00 at address 0x0003, got 0x%02X", result2)
 	}
+
+	t.Logf("Cycles: %d", cpu.Cycles)
 }
