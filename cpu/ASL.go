@@ -1,8 +1,8 @@
 package cpu
 
 // ArithmeticShiftLeft value = value << 1
-func ArithmeticShiftLeft(cpu *CPU, value uint8, address uint16, accumulator bool) {
-	result := value << 1
+func ArithmeticShiftLeft(cpu *CPU, value uint8, address uint16, accumulator bool) (result uint8) {
+	result = value << 1
 
 	cpu.C = value&0x80 != 0
 	cpu.Z = result == 0
@@ -16,6 +16,8 @@ func ArithmeticShiftLeft(cpu *CPU, value uint8, address uint16, accumulator bool
 		cpu.Mapper.Write(cpu, address, result)
 		cpu.Wait()
 	}
+
+	return result
 }
 
 func ArithmeticShiftLeftA(cpu *CPU, operand1 uint8, operand2 uint8) {

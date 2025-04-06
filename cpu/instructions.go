@@ -143,6 +143,15 @@ var Instructions = map[uint8]Instruction{
 	// INY: Increment Y Register
 	0xC8: {Opcode: 0xC8, Size: 1, Mode: Implicit, Cycles: 2, Execute: IncrementY},
 
+	// *ISB: Increment Memory and Subtract with Carry
+	0xE7: {Opcode: 0xE7, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: IncrementSubtractZP},
+	0xF7: {Opcode: 0xF7, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: IncrementSubtractZPX},
+	0xEF: {Opcode: 0xEF, Size: 3, Mode: Absolute, Cycles: 6, Execute: IncrementSubtractABS},
+	0xFF: {Opcode: 0xFF, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: IncrementSubtractABSX},
+	0xFB: {Opcode: 0xFB, Size: 3, Mode: AbsoluteY, Cycles: 7, Execute: IncrementSubtractABSY},
+	0xE3: {Opcode: 0xE3, Size: 2, Mode: IndexedIndirect, Cycles: 8, Execute: IncrementSubtractINDX},
+	0xF3: {Opcode: 0xF3, Size: 2, Mode: IndirectIndexed, Cycles: 8, Execute: IncrementSubtractINDY},
+
 	// JMP: Jump
 	0x4C: {Opcode: 0x4C, Size: 3, Mode: Absolute, Cycles: 3, Execute: JumpABS},
 	0x6C: {Opcode: 0x6C, Size: 3, Mode: Indirect, Cycles: 5, Execute: JumpIND},
@@ -212,6 +221,15 @@ var Instructions = map[uint8]Instruction{
 	// PLP: Pull Processor Status
 	0x28: {Opcode: 0x28, Size: 1, Mode: Implicit, Cycles: 4, Execute: PullProcessorStatus},
 
+	// *RLA: Rotate Left and AND
+	0x27: {Opcode: 0x27, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: RotateLeftAndAndZP},
+	0x37: {Opcode: 0x37, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: RotateLeftAndAndZPX},
+	0x2F: {Opcode: 0x2F, Size: 3, Mode: Absolute, Cycles: 6, Execute: RotateLeftAndAndABS},
+	0x3F: {Opcode: 0x3F, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: RotateLeftAndAndABSX},
+	0x3B: {Opcode: 0x3B, Size: 3, Mode: AbsoluteY, Cycles: 7, Execute: RotateLeftAndAndABSY},
+	0x23: {Opcode: 0x23, Size: 2, Mode: IndexedIndirect, Cycles: 8, Execute: RotateLeftAndAndINDX},
+	0x33: {Opcode: 0x33, Size: 2, Mode: IndirectIndexed, Cycles: 8, Execute: RotateLeftAndAndINDY},
+
 	// ROL: Rotate Left
 	0x2A: {Opcode: 0x2A, Size: 1, Mode: Accumulator, Cycles: 2, Execute: RotateLeftA},
 	0x26: {Opcode: 0x26, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: RotateLeftZP},
@@ -259,6 +277,24 @@ var Instructions = map[uint8]Instruction{
 
 	// SEI: Set Interrupt Disable
 	0x78: {Opcode: 0x78, Size: 1, Mode: Implicit, Cycles: 2, Execute: SetInterruptDisable},
+
+	// *SLO: Shift Left and OR
+	0x07: {Opcode: 0x07, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: ShiftLeftAndOrZP},
+	0x17: {Opcode: 0x17, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: ShiftLeftAndOrZPX},
+	0x0F: {Opcode: 0x0F, Size: 3, Mode: Absolute, Cycles: 6, Execute: ShiftLeftAndOrABS},
+	0x1F: {Opcode: 0x1F, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: ShiftLeftAndOrABSX},
+	0x1B: {Opcode: 0x1B, Size: 3, Mode: AbsoluteY, Cycles: 7, Execute: ShiftLeftAndOrABSY},
+	0x03: {Opcode: 0x03, Size: 2, Mode: IndexedIndirect, Cycles: 8, Execute: ShiftLeftAndOrINDX},
+	0x13: {Opcode: 0x13, Size: 2, Mode: IndirectIndexed, Cycles: 8, Execute: ShiftLeftAndOrINDY},
+
+	// *SRE: Shift Right and Exclusive OR
+	0x47: {Opcode: 0x47, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: ShiftRightAndXORZP},
+	0x57: {Opcode: 0x57, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: ShiftRightAndXORZPX},
+	0x4F: {Opcode: 0x4F, Size: 3, Mode: Absolute, Cycles: 6, Execute: ShiftRightAndXORABS},
+	0x5F: {Opcode: 0x5F, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: ShiftRightAndXORABSX},
+	0x5B: {Opcode: 0x5B, Size: 3, Mode: AbsoluteY, Cycles: 7, Execute: ShiftRightAndXORABSY},
+	0x43: {Opcode: 0x43, Size: 2, Mode: IndexedIndirect, Cycles: 8, Execute: ShiftRightAndXORINDX},
+	0x53: {Opcode: 0x53, Size: 2, Mode: IndirectIndexed, Cycles: 8, Execute: ShiftRightAndXORINDY},
 
 	// STA: Store Accumulator
 	0x85: {Opcode: 0x85, Size: 2, Mode: ZeroPage, Cycles: 3, Execute: StoreAZP},

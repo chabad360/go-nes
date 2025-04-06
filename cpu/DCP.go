@@ -2,17 +2,8 @@ package cpu
 
 // DecrementCompare memory--; A - memory
 func DecrementCompare(cpu *CPU, memory uint8, address uint16) {
-	result := memory - 1
-
-	cpu.Mapper.Write(cpu, address, memory)
-	cpu.Wait()
-	cpu.Mapper.Write(cpu, address, result)
-	cpu.Wait()
-
-	cmp := int(cpu.A) - int(result)
-	cpu.Z = uint8(cmp) == 0
-	cpu.C = cmp >= 0
-	cpu.N = uint8(cmp)&0x80 != 0
+	result := Decrement(cpu, memory, address)
+	Compare(cpu, result)
 }
 
 func DecrementCompareZP(cpu *CPU, operand1 uint8, operand2 uint8) {

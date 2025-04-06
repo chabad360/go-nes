@@ -1,8 +1,8 @@
 package cpu
 
 // Increment memory++
-func Increment(cpu *CPU, value uint8, address uint16) {
-	result := value + 1
+func Increment(cpu *CPU, value uint8, address uint16) (result uint8) {
+	result = value + 1
 
 	cpu.Z = result == 0
 	cpu.N = result&0x80 != 0
@@ -11,6 +11,8 @@ func Increment(cpu *CPU, value uint8, address uint16) {
 	cpu.Wait()
 	cpu.Mapper.Write(cpu, address, result)
 	cpu.Wait()
+
+	return result
 }
 
 func IncrementZP(cpu *CPU, operand1 uint8, operand2 uint8) {

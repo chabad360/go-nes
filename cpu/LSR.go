@@ -1,8 +1,8 @@
 package cpu
 
 // LogicalShiftRight value = value >> 1
-func LogicalShiftRight(cpu *CPU, value uint8, address uint16, accumulator bool) {
-	result := value >> 1
+func LogicalShiftRight(cpu *CPU, value uint8, address uint16, accumulator bool) (result uint8) {
+	result = value >> 1
 
 	cpu.C = value&0x01 != 0
 	cpu.Z = result == 0
@@ -16,6 +16,8 @@ func LogicalShiftRight(cpu *CPU, value uint8, address uint16, accumulator bool) 
 		cpu.Mapper.Write(cpu, address, result)
 		cpu.Wait()
 	}
+
+	return result
 }
 
 func LogicalShiftRightA(cpu *CPU, operand1 uint8, operand2 uint8) {
