@@ -244,6 +244,15 @@ var Instructions = map[uint8]Instruction{
 	0x6E: {Opcode: 0x6E, Size: 3, Mode: Absolute, Cycles: 6, Execute: RotateRightABS},
 	0x7E: {Opcode: 0x7E, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: RotateRightABSX},
 
+	// *RRA: Rotate Right and Add with Carry
+	0x67: {Opcode: 0x67, Size: 2, Mode: ZeroPage, Cycles: 5, Execute: RotateRightAddZP},
+	0x77: {Opcode: 0x77, Size: 2, Mode: ZeroPageX, Cycles: 6, Execute: RotateRightAddZPX},
+	0x6F: {Opcode: 0x6F, Size: 3, Mode: Absolute, Cycles: 6, Execute: RotateRightAddABS},
+	0x7F: {Opcode: 0x7F, Size: 3, Mode: AbsoluteX, Cycles: 7, Execute: RotateRightAddABSX},
+	0x7B: {Opcode: 0x7B, Size: 3, Mode: AbsoluteY, Cycles: 7, Execute: RotateRightAddABSY},
+	0x63: {Opcode: 0x63, Size: 2, Mode: IndexedIndirect, Cycles: 8, Execute: RotateRightAddINDX},
+	0x73: {Opcode: 0x73, Size: 2, Mode: IndirectIndexed, Cycles: 8, Execute: RotateRightAddINDY},
+
 	// RTI: Return from Interrupt
 	0x40: {Opcode: 0x40, Size: 1, Mode: Implicit, Cycles: 6, Execute: ReturnFromInterrupt},
 

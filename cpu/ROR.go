@@ -1,8 +1,8 @@
 package cpu
 
 // RotateRight C = A[0]; A = A >> 1; A[7] = C
-func RotateRight(cpu *CPU, value uint8, address uint16, accumulator bool) {
-	result := value >> 1
+func RotateRight(cpu *CPU, value uint8, address uint16, accumulator bool) (result uint8) {
+	result = value >> 1
 	if cpu.C {
 		result |= 0x80
 	} else {
@@ -21,6 +21,8 @@ func RotateRight(cpu *CPU, value uint8, address uint16, accumulator bool) {
 		cpu.Mapper.Write(cpu, address, result)
 		cpu.Wait()
 	}
+
+	return result
 }
 
 func RotateRightA(cpu *CPU, operand1 uint8, operand2 uint8) {
