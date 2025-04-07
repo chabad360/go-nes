@@ -23,8 +23,8 @@ type CPU struct {
 	Stubbed bool
 }
 
-// PowerOn initializes the CPU to a powered-on state.
-func (cpu *CPU) PowerOn() {
+// SetPowerOnState initializes the CPU to a powered-on state.
+func (cpu *CPU) SetPowerOnState() {
 	cpu.A = 0
 	cpu.X = 0
 	cpu.Y = 0
@@ -39,6 +39,28 @@ func (cpu *CPU) PowerOn() {
 	cpu.N = false
 
 	cpu.Memory = [0x0800]uint8{}
+}
+
+func (cpu *CPU) PowerOn() {
+	cpu.SetPowerOnState()
+	cpu.Wait()
+	cpu.Wait()
+	cpu.Wait()
+	cpu.Wait()
+	cpu.Wait()
+	lb := cpu.Mapper.Read(cpu, cpu.PC)
+	hb := cpu.Mapper.Read(cpu, cpu.PC+1)
+	cpu.Wait()
+	if cpu.Log {
+		slog.Info("Power On",
+			"PC", fmt.Sprintf("0x%04X", cpu.PC),
+			"LB", fmt.Sprintf("0x%02X", lb),
+			"HB", fmt.Sprintf("0x%02X", hb),
+			"Address", fmt.Sprintf("0x%04X", uint16(lb)|uint16(hb)<<8),
+		)
+	}
+
+	Jump(cpu, uint16(lb)|uint16(hb)<<8)
 }
 
 // Reset initializes the CPU to the reset state.

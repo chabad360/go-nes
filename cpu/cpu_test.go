@@ -2,14 +2,14 @@ package cpu
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"go-nes/cart"
 	"go-nes/clock"
 	"os"
 	"regexp"
 	"sync"
 	"testing"
-
-	"go-nes/cart"
 )
 
 type TestLog struct {
@@ -122,7 +122,7 @@ func TestCPU_NESTest(t *testing.T) {
 		t.Fatalf("Failed to parse test log: %v", err)
 	}
 
-	// Load the NESTest cartidge
+	// Load the NESTest cartridge
 	cartidge, err := cart.NewCartidge("testdata/nestest.nes")
 	if err != nil {
 		t.Fatalf("Failed to load NESTest cartidge: %v", err)
@@ -140,7 +140,7 @@ func TestCPU_NESTest(t *testing.T) {
 		ClockTiming: clock.NTSC,
 	}
 
-	cpu.PowerOn()
+	cpu.SetPowerOnState()
 
 	go func() {
 	clock:
@@ -235,6 +235,309 @@ func TestCPU_NESTest(t *testing.T) {
 	}
 	if result2 != 0x00 {
 		t.Errorf("Expected 0x00 at address 0x0003, got 0x%02X", result2)
+	}
+
+	t.Logf("Cycles: %d", cpu.Cycles)
+}
+
+var lastLogOutput string
+var currentTest int
+var testStarted bool
+var passedRegexp = regexp.MustCompile(`\n(02-implied)\n\n(Passed|Failed)\n`)
+
+func ReadBlargg(t *testing.T, cpu *CPU) (testNum int, testCompleted bool, passed bool, completed bool) {
+	t.Helper()
+
+	testNum = currentTest
+
+	h1, h2, h3 := cpu.Mapper.Read(cpu, 0x6001), cpu.Mapper.Read(cpu, 0x6002), cpu.Mapper.Read(cpu, 0x6003)
+	if h1 != 0xDE || h2 != 0xB0 || h3 != 0x61 {
+		if testStarted {
+			t.Logf("Test not running, expected 0xDEB061, got %02X %02X %02X", h1, h2, h3)
+		}
+		return
+	}
+
+	testStarted = true
+
+	testStatus := cpu.Mapper.Read(cpu, 0x6000)
+	switch testStatus {
+	case 0x80:
+	case 0x81:
+		t.Error("Test is awaiting a reset")
+		return
+	case 0x00:
+		completed = true
+		return
+	default:
+		t.Errorf("Test is stopped: %02X", testStatus)
+		completed = true
+		return
+	}
+
+	mapper := cpu.Mapper.(*NROM)
+	textSlice := mapper.RAM[4:]
+	idx := bytes.IndexByte(textSlice, byte(0))
+	if idx == -1 {
+		return
+	}
+	textSlice = textSlice[:idx]
+	if len(textSlice) <= 0 || string(textSlice) == lastLogOutput {
+		return
+	}
+
+	lastLogOutput = string(textSlice)
+	t.Logf("Log output: %s, %v", textSlice, textSlice)
+
+	var totalTests int
+	n, err := fmt.Sscanf(string(textSlice), "Running test %d of %d", &testNum, &totalTests)
+	if err == nil && n == 2 && totalTests == 16 {
+		currentTest = testNum
+		return
+	}
+
+	result := passedRegexp.FindStringSubmatch(string(textSlice))
+	if len(result) == 3 && result[1] == "02-implied" {
+		testCompleted = true
+		if result[2] == "Passed" {
+			passed = true
+		} else if result[2] == "Failed" {
+			passed = false
+		}
+	}
+
+	return
+}
+
+func TestCPU_BlarggOfficialv5(t *testing.T) {
+	cartridge, err := cart.NewCartidge("testdata/official_only.nes")
+	if err != nil {
+		t.Fatalf("Failed to load Official cartridge: %v", err)
+	}
+
+	c := make(chan int)
+	currentTest = 0
+
+	cpu := &CPU{
+		Mapper: &NROM{
+			PRGROM: cartridge.PRGROM,
+			CHRROM: cartridge.CHRROM,
+		},
+		Clock:       c,
+		ClockTiming: clock.NTSC,
+
+		//Log: true,
+	}
+
+	if len(cartridge.PRGROM) == 0 {
+		t.Fatalf("No PRG ROM found in cartridge")
+	}
+
+	go func() {
+		//ti := time.NewTicker(time.Second / (236250000 / 11))
+	clock:
+		for i := 0; ; i++ {
+			select {
+			case <-t.Context().Done():
+				break clock
+			//case <-ti.C:
+			default:
+				c <- i
+			}
+		}
+	}()
+
+	cpu.PowerOn()
+
+	currentTest = 0
+	//var completed bool
+	for i := 0; i <= 16; i++ {
+		t.Run("Test "+fmt.Sprintf("%d", i), func(t *testing.T) {
+			for j := 0; ; j++ {
+				exec := cpu.Decode()
+				if _, exists := Instructions[exec.Opcode]; !exists {
+					t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
+					t.Fail()
+				}
+
+				cpu.Fetch(exec)
+				// if the instruction is likely going to corrupt CPU state, stop this iteration.
+				if t.Failed() {
+					t.FailNow()
+				}
+
+				cpu.Execute(exec)
+				if cpu.Stubbed {
+					t.Fail()
+				}
+
+				testNum, testComleted, testPassed, _ := ReadBlargg(t, cpu)
+				//completed = c
+				if currentTest != testNum && currentTest == 0 {
+					currentTest = testNum
+					return
+				} else {
+					currentTest = testNum
+				}
+
+				if testComleted {
+					if !testPassed {
+						val := cpu.Mapper.Read(cpu, 0x6000)
+						t.Errorf("Test failed: 0x%02X", val)
+					}
+					return
+				}
+			}
+		})
+	}
+
+	for j := 0; ; j++ {
+		exec := cpu.Decode()
+		if _, exists := Instructions[exec.Opcode]; !exists {
+			t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
+			t.Fail()
+		}
+
+		cpu.Fetch(exec)
+		// if the instruction is likely going to corrupt CPU state, stop this iteration.
+		if t.Failed() {
+			t.FailNow()
+		}
+
+		cpu.Execute(exec)
+		if cpu.Stubbed {
+			t.Fail()
+		}
+		val := cpu.Mapper.Read(cpu, 0x6000)
+		if val != 0x80 {
+			break
+		}
+	}
+
+	if t.Failed() {
+		t.FailNow()
+	}
+
+	result := cpu.Mapper.Read(cpu, 0x6000)
+	if result != 0x00 {
+		t.Errorf("Test failed: want 0x00, got 0x%02X", result)
+	}
+
+	t.Logf("Cycles: %d", cpu.Cycles)
+}
+
+func TestCPU_BlarggAllv5(t *testing.T) {
+	cartridge, err := cart.NewCartidge("testdata/all_instrs.nes")
+	if err != nil {
+		t.Fatalf("Failed to load all_instrs cartridge: %v", err)
+	}
+
+	c := make(chan int)
+	currentTest = 0
+
+	cpu := &CPU{
+		Mapper: &NROM{
+			PRGROM: cartridge.PRGROM,
+			CHRROM: cartridge.CHRROM,
+		},
+		Clock:       c,
+		ClockTiming: clock.NTSC,
+
+		//Log: true,
+	}
+
+	if len(cartridge.PRGROM) == 0 {
+		t.Fatalf("No PRG ROM found in cartridge")
+	}
+
+	go func() {
+		//ti := time.NewTicker(time.Second / (236250000 / 11))
+	clock:
+		for i := 0; ; i++ {
+			select {
+			case <-t.Context().Done():
+				break clock
+			//case <-ti.C:
+			default:
+				c <- i
+			}
+		}
+	}()
+
+	cpu.PowerOn()
+
+	currentTest = 0
+	//var completed bool
+	for i := 0; i <= 16; i++ {
+		t.Run("Test "+fmt.Sprintf("%d", i), func(t *testing.T) {
+			for j := 0; ; j++ {
+				exec := cpu.Decode()
+				if _, exists := Instructions[exec.Opcode]; !exists {
+					t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
+					t.Fail()
+				}
+
+				cpu.Fetch(exec)
+				// if the instruction is likely going to corrupt CPU state, stop this iteration.
+				if t.Failed() {
+					t.FailNow()
+				}
+
+				cpu.Execute(exec)
+				if cpu.Stubbed {
+					t.Fail()
+				}
+
+				testNum, testComleted, testPassed, _ := ReadBlargg(t, cpu)
+				//completed = c
+				if currentTest != testNum && currentTest == 0 {
+					currentTest = testNum
+					return
+				} else {
+					currentTest = testNum
+				}
+
+				if testComleted {
+					if !testPassed {
+						val := cpu.Mapper.Read(cpu, 0x6000)
+						t.Errorf("Test failed: 0x%02X", val)
+					}
+					return
+				}
+			}
+		})
+	}
+
+	for j := 0; ; j++ {
+		exec := cpu.Decode()
+		if _, exists := Instructions[exec.Opcode]; !exists {
+			t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
+			t.Fail()
+		}
+
+		cpu.Fetch(exec)
+		// if the instruction is likely going to corrupt CPU state, stop this iteration.
+		if t.Failed() {
+			t.FailNow()
+		}
+
+		cpu.Execute(exec)
+		if cpu.Stubbed {
+			t.Fail()
+		}
+		val := cpu.Mapper.Read(cpu, 0x6000)
+		if val != 0x80 {
+			break
+		}
+	}
+
+	if t.Failed() {
+		t.FailNow()
+	}
+
+	result := cpu.Mapper.Read(cpu, 0x6000)
+	if result != 0x00 {
+		t.Errorf("Test failed: want 0x00, got 0x%02X", result)
 	}
 
 	t.Logf("Cycles: %d", cpu.Cycles)
