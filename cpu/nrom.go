@@ -2,16 +2,24 @@ package cpu
 
 type NROM struct {
 	GenericMapper
-	PRGROM []uint8
 
+	PRGROM []uint8
 	CHRROM []uint8
+
+	RAM [0x2000]uint8
 }
 
 func (n *NROM) Write(cpu *CPU, address uint16, value uint8) {
+	if address >= 0x6000 && address < 0x8000 {
+		n.RAM[address-0x6000] = value
+	}
 	n.GenericMapper.Write(cpu, address, value) // NROM has no special write behavior
 }
 
 func (n *NROM) Read(cpu *CPU, address uint16) uint8 {
+	if address >= 0x6000 && address < 0x8000 {
+		return n.RAM[address-0x6000]
+	}
 	if address >= 0x8000 {
 		if address < 0xBFFF {
 			return n.PRGROM[address-0x8000]

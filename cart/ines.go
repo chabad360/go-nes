@@ -62,9 +62,6 @@ func (c *Cartidge) Load() error {
 	}
 
 	// Read CHR-ROM
-	if len(c.CHRROM) == 0 {
-		c.CHRROM = make([]byte, 0x2000) // Default to CHR-RAM
-	}
 	if _, err := c.file.Read(c.CHRROM); err != nil {
 		return err
 	}
