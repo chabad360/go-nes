@@ -65,6 +65,9 @@ var Instructions = map[uint8]Instruction{
 	// BPL: Branch if Positive
 	0x10: {Opcode: 0x10, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfPlus},
 
+	// BRK: Force Break
+	0x00: {Opcode: 0x00, Size: 2, Mode: Immediate, Cycles: 7, Execute: Break},
+
 	// BVC: Branch if Overflow Clear
 	0x50: {Opcode: 0x50, Size: 2, Mode: Relative, Cycles: 2, Execute: BranchIfOverflowClear},
 
@@ -76,6 +79,9 @@ var Instructions = map[uint8]Instruction{
 
 	// CLD: Clear Decimal Flag
 	0xD8: {Opcode: 0xD8, Size: 1, Mode: Implicit, Cycles: 2, Execute: ClearDecimal},
+
+	// CLI: Clear Interrupt Disable
+	0x58: {Opcode: 0x58, Size: 1, Mode: Implicit, Cycles: 2, Execute: ClearInterrupt},
 
 	// CLV: Clear Overflow Flag
 	0xB8: {Opcode: 0xB8, Size: 1, Mode: Implicit, Cycles: 2, Execute: ClearOverflow},
