@@ -128,7 +128,7 @@ func TestCPU_NESTest(t *testing.T) {
 		t.Fatalf("Failed to load NESTest cartidge: %v", err)
 	}
 
-	c := make(chan int)
+	c := make(chan int, 1000)
 
 	cpu := &CPU{
 		Mapper: &NROM{
@@ -143,11 +143,10 @@ func TestCPU_NESTest(t *testing.T) {
 	cpu.SetPowerOnState()
 
 	go func() {
-	clock:
 		for i := 8 * 12; ; i++ {
 			select {
 			case <-t.Context().Done():
-				break clock
+				return
 			default:
 				c <- i
 			}
@@ -315,7 +314,7 @@ func TestCPU_BlarggOfficialv5(t *testing.T) {
 		t.Fatalf("Failed to load Official cartridge: %v", err)
 	}
 
-	c := make(chan int)
+	c := make(chan int, 1000)
 	currentTest = 0
 
 	cpu := &CPU{
@@ -335,11 +334,10 @@ func TestCPU_BlarggOfficialv5(t *testing.T) {
 
 	go func() {
 		//ti := time.NewTicker(time.Second / (236250000 / 11))
-	clock:
 		for i := 0; ; i++ {
 			select {
 			case <-t.Context().Done():
-				break clock
+				return
 			//case <-ti.C:
 			default:
 				c <- i
@@ -432,7 +430,7 @@ func TestCPU_BlarggAllv5(t *testing.T) {
 		t.Fatalf("Failed to load all_instrs cartridge: %v", err)
 	}
 
-	c := make(chan int)
+	c := make(chan int, 1000)
 	currentTest = 0
 
 	cpu := &CPU{
@@ -452,11 +450,10 @@ func TestCPU_BlarggAllv5(t *testing.T) {
 
 	go func() {
 		//ti := time.NewTicker(time.Second / (236250000 / 11))
-	clock:
 		for i := 0; ; i++ {
 			select {
 			case <-t.Context().Done():
-				break clock
+				return
 			//case <-ti.C:
 			default:
 				c <- i
