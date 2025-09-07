@@ -74,15 +74,15 @@ type Exec struct {
 func (cpu *CPU) Decode() *Exec {
 	opcode := cpu.Mapper.Read(cpu, cpu.PC)
 	cpu.Wait()
-	instruction, exists := Instructions[opcode]
-	if !exists {
-		instruction = Instruction{
-			Opcode:  opcode,
-			Size:    0,
-			Cycles:  2,
-			Execute: UNKNOWN,
-		}
-	}
+	instruction := Instructions[opcode]
+	//if !exists {
+	//	instruction = Instruction{
+	//		Opcode:  opcode,
+	//		Size:    0,
+	//		Cycles:  2,
+	//		Execute: UNKNOWN,
+	//	}
+	//}
 
 	exec := &Exec{
 		Instruction: instruction,
