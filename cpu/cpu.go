@@ -48,19 +48,11 @@ func (cpu *CPU) PowerOn() {
 	cpu.Wait()
 	cpu.Wait()
 	cpu.Wait()
-	lb := cpu.Mapper.Read(cpu, cpu.PC)
-	hb := cpu.Mapper.Read(cpu, cpu.PC+1)
 	cpu.Wait()
-	if cpu.Log {
-		slog.Info("Power On",
-			"PC", fmt.Sprintf("0x%04X", cpu.PC),
-			"LB", fmt.Sprintf("0x%02X", lb),
-			"HB", fmt.Sprintf("0x%02X", hb),
-			"Address", fmt.Sprintf("0x%04X", uint16(lb)|uint16(hb)<<8),
-		)
-	}
-
-	Jump(cpu, uint16(lb)|uint16(hb)<<8)
+	cpu.Wait()
+	JumpABS(cpu,
+		cpu.Mapper.Read(cpu, cpu.PC),
+		cpu.Mapper.Read(cpu, cpu.PC+1))
 }
 
 // Reset initializes the CPU to the reset state.
