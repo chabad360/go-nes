@@ -25,22 +25,22 @@ func ArithmeticShiftLeftA(cpu *CPU, operand1 uint8, operand2 uint8) {
 }
 
 func ArithmeticShiftLeftZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPage(cpu, operand1, operand2)
+	value, address := ZeroPage(cpu, operand1, operand2, false)
 	ArithmeticShiftLeft(cpu, value(), address, false)
 }
 
 func ArithmeticShiftLeftZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPageX(cpu, operand1, operand2)
+	value, address := ZeroPageX(cpu, operand1, operand2, false)
 	ArithmeticShiftLeft(cpu, value(), address, false)
 }
 
 func ArithmeticShiftLeftABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := Absolute(cpu, operand1, operand2)
+	value, address := Absolute(cpu, operand1, operand2, false)
 	ArithmeticShiftLeft(cpu, value(), address, false)
 }
 
 func ArithmeticShiftLeftABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := AbsoluteX(cpu, operand1, operand2)
+	value, address := AbsoluteX(cpu, operand1, operand2, false)
 	cpu.Wait()
 	ArithmeticShiftLeft(cpu, value(), address, false)
 }

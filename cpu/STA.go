@@ -7,23 +7,23 @@ func StoreA(cpu *CPU, memory uint16) {
 }
 
 func StoreAZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, address := ZeroPage(cpu, operand1, operand2)
+	_, address := ZeroPage(cpu, operand1, operand2, true)
 	StoreA(cpu, address)
 }
 
 func StoreAZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, address := ZeroPageX(cpu, operand1, operand2)
+	_, address := ZeroPageX(cpu, operand1, operand2, true)
 	StoreA(cpu, address)
 }
 
 func StoreAABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, address := Absolute(cpu, operand1, operand2)
+	_, address := Absolute(cpu, operand1, operand2, true)
 	StoreA(cpu, address)
 }
 
 func StoreAABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cyc := cpu.Cycles + 1
-	_, address := AbsoluteX(cpu, operand1, operand2)
+	_, address := AbsoluteX(cpu, operand1, operand2, true)
 	if cyc > cpu.Cycles {
 		cpu.Wait()
 	}
@@ -32,7 +32,7 @@ func StoreAABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
 
 func StoreAABSY(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cyc := cpu.Cycles + 1
-	_, address := AbsoluteY(cpu, operand1, operand2)
+	_, address := AbsoluteY(cpu, operand1, operand2, true)
 	if cyc > cpu.Cycles {
 		cpu.Wait()
 	}
@@ -40,12 +40,12 @@ func StoreAABSY(cpu *CPU, operand1 uint8, operand2 uint8) {
 }
 
 func StoreAINDX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, address := IndexedIndirect(cpu, operand1, operand2)
+	_, address := IndexedIndirect(cpu, operand1, operand2, true)
 	StoreA(cpu, address)
 }
 
 func StoreAINDY(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, address := IndirectIndexed(cpu, operand1, operand2)
+	_, address := IndirectIndexed(cpu, operand1, operand2, true)
 	cpu.Wait()
 	StoreA(cpu, address)
 }

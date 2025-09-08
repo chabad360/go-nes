@@ -5,7 +5,7 @@ import (
 	"log/slog"
 )
 
-type AddressingMode func(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16)
+type AddressingMode func(cpu *CPU, operand1, operand2 uint8, valueless bool) (value ValueGuard, address uint16)
 
 // ValueGuard is a closure used to wrap the value of memory, to only cost an instruction when the value is used
 type ValueGuard func() uint8
@@ -37,69 +37,89 @@ func logInstruction(cpu *CPU, mode string, operand1, operand2 uint8, address uin
 }
 
 // Immediate returns the immediate operand without any modification
-func Immediate(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
+func Immediate(cpu *CPU, operand1, operand2 uint8, valueless bool) (ValueGuard, uint16) {
 	logInstruction(cpu, "Immediate", operand1, operand2, 0, operand1, 2)
+	if valueless {
+		return nil, 0
+	}
 	return UnguardedValue(operand1), 0
 }
 
 // Implicit is used for instructions that do not require an operand
-func Implicit(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
+func Implicit(cpu *CPU, operand1, operand2 uint8, valueless bool) (ValueGuard, uint16) {
 	// No operation, just return 0
+	if valueless {
+		return nil, 0
+	}
 	return UnguardedValue(0), 0
 }
 
 // Accumulator is used for instructions that operate directly on the accumulator
-func Accumulator(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
+func Accumulator(cpu *CPU, operand1, operand2 uint8, valueless bool) (ValueGuard, uint16) {
+	if valueless {
+		return nil, 0
+	}
 	return UnguardedValue(cpu.A), 0 // No address, just return the accumulator value
 }
 
 // Relative calculates the address for branch instructions based on the operand
-func Relative(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
+func Relative(cpu *CPU, operand1, operand2 uint8, valueless bool) (ValueGuard, uint16) {
 	address := uint16(int(cpu.PC) + int(int8(operand1)))
 	logInstruction(cpu, "Relative", operand1, operand2, address, operand1, 3)
+	if valueless {
+		return nil, address
+	}
 	return UnguardedValue(operand1), address
 }
 
 // ZeroPage reads a byte from the zero page using the operand as the address
-func ZeroPage(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
+func ZeroPage(cpu *CPU, operand1, operand2 uint8, valueless bool) (value ValueGuard, address uint16) {
 	val := cpu.Mapper.Read(cpu, uint16(operand1))
 	address = uint16(operand1)
 	logInstruction(cpu, "Zero Page", operand1, operand2, address, val, 2)
-	value = GuardValue(cpu, val)
+	if !valueless {
+		value = GuardValue(cpu, val)
+	}
 	return
 }
 
 // ZeroPageX reads a byte from the zero page using the operand plus the X register as the address
-func ZeroPageX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
+func ZeroPageX(cpu *CPU, operand1, operand2 uint8, valueless bool) (value ValueGuard, address uint16) {
 	address = uint16(operand1+cpu.X) % 256
 	cpu.Wait()
 	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Zero Page X", operand1, operand2, address, val, 2)
-	value = GuardValue(cpu, val)
+	if !valueless {
+		value = GuardValue(cpu, val)
+	}
 	return
 }
 
 // ZeroPageY reads a byte from the zero page using the operand plus the Y register as the address
-func ZeroPageY(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
+func ZeroPageY(cpu *CPU, operand1, operand2 uint8, valueless bool) (value ValueGuard, address uint16) {
 	address = uint16(operand1+cpu.Y) % 256
 	cpu.Wait()
 	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Zero Page Y", operand1, operand2, address, val, 2)
-	value = GuardValue(cpu, val)
+	if !valueless {
+		value = GuardValue(cpu, val)
+	}
 	return
 }
 
 // Absolute reads a byte from the absolute 16-bit address specified by the operand
-func Absolute(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
+func Absolute(cpu *CPU, operand1, operand2 uint8, valueless bool) (value ValueGuard, address uint16) {
 	address = uint16(operand2)<<8 | uint16(operand1)
 	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Absolute", operand1, operand2, address, val, 3)
-	value = GuardValue(cpu, val)
+	if !valueless {
+		value = GuardValue(cpu, val)
+	}
 	return
 }
 
 // AbsoluteX reads a byte from the absolute address specified by the operand plus the X register
-func AbsoluteX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
+func AbsoluteX(cpu *CPU, operand1, operand2 uint8, valueless bool) (value ValueGuard, address uint16) {
 	address = uint16(operand2)<<8 | uint16(operand1)
 
 	a := address & 0xFF00
@@ -110,12 +130,14 @@ func AbsoluteX(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address ui
 
 	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Absolute X", operand1, operand2, address, val, 3)
-	value = GuardValue(cpu, val)
+	if !valueless {
+		value = GuardValue(cpu, val)
+	}
 	return
 }
 
 // AbsoluteY reads a byte from the absolute address specified by the operand plus the Y register
-func AbsoluteY(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
+func AbsoluteY(cpu *CPU, operand1, operand2 uint8, valueless bool) (value ValueGuard, address uint16) {
 	address = uint16(operand2)<<8 | uint16(operand1)
 
 	a := address & 0xFF00
@@ -126,12 +148,14 @@ func AbsoluteY(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address ui
 
 	val := cpu.Mapper.Read(cpu, address)
 	logInstruction(cpu, "Absolute Y Mode", operand1, operand2, address, val, 3)
-	value = GuardValue(cpu, val)
+	if !valueless {
+		value = GuardValue(cpu, val)
+	}
 	return
 }
 
 // Indirect reads a byte from the address specified by the operand, which is treated as a pointer (doesn't return the address)
-func Indirect(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
+func Indirect(cpu *CPU, operand1, operand2 uint8, valueless bool) (ValueGuard, uint16) {
 	address := uint16(operand2)<<8 | uint16(operand1)
 
 	low := cpu.Mapper.Read(cpu, address)
@@ -147,11 +171,14 @@ func Indirect(cpu *CPU, operand1, operand2 uint8) (ValueGuard, uint16) {
 	// Combine the high and low bytes to get the actual address
 	address = uint16(high)<<8 | uint16(low)
 	logInstruction(cpu, "Indirect", operand1, operand2, uint16(operand2)<<8|uint16(operand1), uint8(address), 3)
+	if valueless {
+		return nil, address
+	}
 	return UnguardedValue(low), address
 }
 
 // IndexedIndirect reads a byte from an indirect address specified by the operand plus the X register
-func IndexedIndirect(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
+func IndexedIndirect(cpu *CPU, operand1, operand2 uint8, valueless bool) (value ValueGuard, address uint16) {
 	address = uint16(operand1 + cpu.X)
 	cpu.Wait()
 	low := cpu.Mapper.Read(cpu, address%256)
@@ -167,12 +194,14 @@ func IndexedIndirect(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, addr
 	val := cpu.Mapper.Read(cpu, address)
 
 	logInstruction(cpu, "Indexed Indirect", operand1, operand2, address, val, 3)
-	value = GuardValue(cpu, val)
+	if !valueless {
+		value = GuardValue(cpu, val)
+	}
 	return
 }
 
 // IndirectIndexed reads a byte from an indirect address specified by the operand plus the Y register
-func IndirectIndexed(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, address uint16) {
+func IndirectIndexed(cpu *CPU, operand1, operand2 uint8, valueless bool) (value ValueGuard, address uint16) {
 	low := cpu.Mapper.Read(cpu, uint16(operand1))
 	cpu.Wait()
 
@@ -193,6 +222,8 @@ func IndirectIndexed(cpu *CPU, operand1, operand2 uint8) (value ValueGuard, addr
 	val := cpu.Mapper.Read(cpu, address)
 
 	logInstruction(cpu, "Indirect Indexed", operand1, operand2, address, val, 3)
-	value = GuardValue(cpu, val)
+	if !valueless {
+		value = GuardValue(cpu, val)
+	}
 	return
 }

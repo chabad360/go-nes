@@ -16,22 +16,22 @@ func Increment(cpu *CPU, value uint8, address uint16) (result uint8) {
 }
 
 func IncrementZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPage(cpu, operand1, operand2)
+	value, address := ZeroPage(cpu, operand1, operand2, false)
 	Increment(cpu, value(), address)
 }
 
 func IncrementZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPageX(cpu, operand1, operand2)
+	value, address := ZeroPageX(cpu, operand1, operand2, false)
 	Increment(cpu, value(), address)
 }
 
 func IncrementABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := Absolute(cpu, operand1, operand2)
+	value, address := Absolute(cpu, operand1, operand2, false)
 	Increment(cpu, value(), address)
 }
 
 func IncrementABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := AbsoluteX(cpu, operand1, operand2)
+	value, address := AbsoluteX(cpu, operand1, operand2, false)
 	cpu.Wait()
 	Increment(cpu, value(), address)
 }

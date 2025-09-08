@@ -12,21 +12,21 @@ func StoreAAndX(cpu *CPU, address uint16, isIndexed bool) {
 }
 
 func StoreAAndXZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, address := ZeroPage(cpu, operand1, operand2)
+	_, address := ZeroPage(cpu, operand1, operand2, true)
 	StoreAAndX(cpu, address, false)
 }
 
 func StoreAAndXZPY(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, address := ZeroPageY(cpu, operand1, operand2)
+	_, address := ZeroPageY(cpu, operand1, operand2, true)
 	StoreAAndX(cpu, address, false)
 }
 
 func StoreAAndXABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, address := Absolute(cpu, operand1, operand2)
+	_, address := Absolute(cpu, operand1, operand2, true)
 	StoreAAndX(cpu, address, false)
 }
 
 func StoreAAndXINDX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	_, address := IndexedIndirect(cpu, operand1, operand2)
+	_, address := IndexedIndirect(cpu, operand1, operand2, true)
 	StoreAAndX(cpu, address, true)
 }

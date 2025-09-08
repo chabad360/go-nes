@@ -10,36 +10,36 @@ func LoadAX(cpu *CPU, memory uint8) {
 }
 
 func LoadAXIMM(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := Immediate(cpu, operand1, operand2)
+	memory, _ := Immediate(cpu, operand1, operand2, false)
 	LoadAX(cpu, memory())
 }
 
 func LoadAXZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := ZeroPage(cpu, operand1, operand2)
+	memory, _ := ZeroPage(cpu, operand1, operand2, false)
 	LoadAX(cpu, memory())
 }
 
 func LoadAXZPY(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := ZeroPageY(cpu, operand1, operand2)
+	memory, _ := ZeroPageY(cpu, operand1, operand2, false)
 	LoadAX(cpu, memory())
 }
 
 func LoadAXABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := Absolute(cpu, operand1, operand2)
+	memory, _ := Absolute(cpu, operand1, operand2, false)
 	LoadAX(cpu, memory())
 }
 
 func LoadAXABSY(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := AbsoluteY(cpu, operand1, operand2)
+	memory, _ := AbsoluteY(cpu, operand1, operand2, false)
 	LoadAX(cpu, memory())
 }
 
 func LoadAXINDX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := IndexedIndirect(cpu, operand1, operand2)
+	memory, _ := IndexedIndirect(cpu, operand1, operand2, false)
 	LoadAX(cpu, memory())
 }
 
 func LoadAXINDY(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := IndirectIndexed(cpu, operand1, operand2)
+	memory, _ := IndirectIndexed(cpu, operand1, operand2, false)
 	LoadAX(cpu, memory())
 }

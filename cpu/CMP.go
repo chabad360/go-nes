@@ -10,41 +10,41 @@ func Compare(cpu *CPU, memory uint8) {
 }
 
 func CompareIMM(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := Immediate(cpu, operand1, operand2)
+	memory, _ := Immediate(cpu, operand1, operand2, false)
 	Compare(cpu, memory())
 }
 
 func CompareZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := ZeroPage(cpu, operand1, operand2)
+	memory, _ := ZeroPage(cpu, operand1, operand2, false)
 	Compare(cpu, memory())
 }
 
 func CompareZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := ZeroPageX(cpu, operand1, operand2)
+	memory, _ := ZeroPageX(cpu, operand1, operand2, false)
 	Compare(cpu, memory())
 }
 
 func CompareABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := Absolute(cpu, operand1, operand2)
+	memory, _ := Absolute(cpu, operand1, operand2, false)
 	Compare(cpu, memory())
 }
 
 func CompareABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := AbsoluteX(cpu, operand1, operand2)
+	memory, _ := AbsoluteX(cpu, operand1, operand2, false)
 	Compare(cpu, memory())
 }
 
 func CompareABSY(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := AbsoluteY(cpu, operand1, operand2)
+	memory, _ := AbsoluteY(cpu, operand1, operand2, false)
 	Compare(cpu, memory())
 }
 
 func CompareINDX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := IndexedIndirect(cpu, operand1, operand2)
+	memory, _ := IndexedIndirect(cpu, operand1, operand2, false)
 	Compare(cpu, memory())
 }
 
 func CompareINDY(cpu *CPU, operand1 uint8, operand2 uint8) {
-	memory, _ := IndirectIndexed(cpu, operand1, operand2)
+	memory, _ := IndirectIndexed(cpu, operand1, operand2, false)
 	Compare(cpu, memory())
 }

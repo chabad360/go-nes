@@ -30,22 +30,22 @@ func RotateRightA(cpu *CPU, operand1 uint8, operand2 uint8) {
 }
 
 func RotateRightZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPage(cpu, operand1, operand2)
+	value, address := ZeroPage(cpu, operand1, operand2, false)
 	RotateRight(cpu, value(), address, false)
 }
 
 func RotateRightZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPageX(cpu, operand1, operand2)
+	value, address := ZeroPageX(cpu, operand1, operand2, false)
 	RotateRight(cpu, value(), address, false)
 }
 
 func RotateRightABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := Absolute(cpu, operand1, operand2)
+	value, address := Absolute(cpu, operand1, operand2, false)
 	RotateRight(cpu, value(), address, false)
 }
 
 func RotateRightABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := AbsoluteX(cpu, operand1, operand2)
+	value, address := AbsoluteX(cpu, operand1, operand2, false)
 	cpu.Wait()
 	RotateRight(cpu, value(), address, false)
 }

@@ -420,23 +420,23 @@ func NOP(cpu *CPU, operand1 uint8, operand2 uint8) {
 }
 
 func NOPZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, _ := ZeroPage(cpu, operand1, operand2)
-	value()
+	ZeroPage(cpu, operand1, operand2, true)
+	cpu.Wait()
 }
 
 func NOPZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, _ := ZeroPageX(cpu, operand1, operand2)
-	value()
+	ZeroPageX(cpu, operand1, operand2, true)
+	cpu.Wait()
 }
 
 func NOPABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, _ := Absolute(cpu, operand1, operand2)
-	value()
+	Absolute(cpu, operand1, operand2, true)
+	cpu.Wait()
 }
 
 func NOPABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, _ := AbsoluteX(cpu, operand1, operand2)
-	value()
+	AbsoluteX(cpu, operand1, operand2, true)
+	cpu.Wait()
 }
 
 func UNKNOWN(cpu *CPU, operand1 uint8, operand2 uint8) {
@@ -490,7 +490,7 @@ func StubAccumulator(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubRelative is a placeholder for relative addressing mode
 func StubRelative(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	value, address := Relative(cpu, operand1, operand2)
+	value, address := Relative(cpu, operand1, operand2, false)
 	slog.Warn("Relative Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,
@@ -504,7 +504,7 @@ func StubRelative(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubZeroPage is a placeholder for zero page addressing mode operation
 func StubZeroPage(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	value, address := ZeroPage(cpu, operand1, operand2)
+	value, address := ZeroPage(cpu, operand1, operand2, false)
 	slog.Warn("Zero Page Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,
@@ -518,7 +518,7 @@ func StubZeroPage(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubZeroPageX is a placeholder for zero page X addressing mode
 func StubZeroPageX(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	value, address := ZeroPageX(cpu, operand1, operand2)
+	value, address := ZeroPageX(cpu, operand1, operand2, false)
 	slog.Warn("Zero Page X Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,
@@ -532,7 +532,7 @@ func StubZeroPageX(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubZeroPageY is a placeholder for zero page Y addressing mode operation
 func StubZeroPageY(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	value, address := ZeroPageY(cpu, operand1, operand2)
+	value, address := ZeroPageY(cpu, operand1, operand2, false)
 	slog.Warn("Zero Page Y Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,
@@ -546,7 +546,7 @@ func StubZeroPageY(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubAbsolute is a placeholder for absolute addressing mode operation
 func StubAbsolute(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	value, address := Absolute(cpu, operand1, operand2)
+	value, address := Absolute(cpu, operand1, operand2, false)
 	slog.Warn("Absolute Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,
@@ -560,7 +560,7 @@ func StubAbsolute(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubAbsoluteX is a placeholder for absolute X addressing mode operation
 func StubAbsoluteX(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	value, address := AbsoluteX(cpu, operand1, operand2)
+	value, address := AbsoluteX(cpu, operand1, operand2, false)
 	slog.Warn("Absolute X Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,
@@ -574,7 +574,7 @@ func StubAbsoluteX(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubAbsoluteY is a placeholder for absolute Y addressing mode operation
 func StubAbsoluteY(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	value, address := AbsoluteY(cpu, operand1, operand2)
+	value, address := AbsoluteY(cpu, operand1, operand2, false)
 	slog.Warn("Absolute Y Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,
@@ -588,7 +588,7 @@ func StubAbsoluteY(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubIndirect is a placeholder for indirect addressing mode operation
 func StubIndirect(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	_, value2 := Indirect(cpu, operand1, operand2)
+	_, value2 := Indirect(cpu, operand1, operand2, false)
 	slog.Warn("Indirect Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,
@@ -602,7 +602,7 @@ func StubIndirect(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubIndexedIndirect is a placeholder for indexed indirect addressing mode
 func StubIndexedIndirect(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	value, address := IndexedIndirect(cpu, operand1, operand2)
+	value, address := IndexedIndirect(cpu, operand1, operand2, false)
 	slog.Warn("Indexed Indirect Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,
@@ -616,7 +616,7 @@ func StubIndexedIndirect(cpu *CPU, operand1 uint8, operand2 uint8) {
 // StubIndirectIndexed is a placeholder for an indirect indexed addressing mode operation
 func StubIndirectIndexed(cpu *CPU, operand1 uint8, operand2 uint8) {
 	cpu.Stubbed = true
-	value, address := IndirectIndexed(cpu, operand1, operand2)
+	value, address := IndirectIndexed(cpu, operand1, operand2, false)
 	slog.Warn("Indirect Indexed Mode Instruction Stubbed",
 		"PC", cpu.PC,
 		"Operand1", operand1,

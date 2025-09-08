@@ -25,22 +25,22 @@ func LogicalShiftRightA(cpu *CPU, operand1 uint8, operand2 uint8) {
 }
 
 func LogicalShiftRightZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPage(cpu, operand1, operand2)
+	value, address := ZeroPage(cpu, operand1, operand2, false)
 	LogicalShiftRight(cpu, value(), address, false)
 }
 
 func LogicalShiftRightZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPageX(cpu, operand1, operand2)
+	value, address := ZeroPageX(cpu, operand1, operand2, false)
 	LogicalShiftRight(cpu, value(), address, false)
 }
 
 func LogicalShiftRightABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := Absolute(cpu, operand1, operand2)
+	value, address := Absolute(cpu, operand1, operand2, false)
 	LogicalShiftRight(cpu, value(), address, false)
 }
 
 func LogicalShiftRightABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := AbsoluteX(cpu, operand1, operand2)
+	value, address := AbsoluteX(cpu, operand1, operand2, false)
 	cpu.Wait()
 	LogicalShiftRight(cpu, value(), address, false)
 }

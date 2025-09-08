@@ -7,36 +7,36 @@ func ShiftLeftAndOr(cpu *CPU, memory uint8, address uint16) {
 }
 
 func ShiftLeftAndOrZP(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPage(cpu, operand1, operand2)
+	value, address := ZeroPage(cpu, operand1, operand2, false)
 	ShiftLeftAndOr(cpu, value(), address)
 }
 
 func ShiftLeftAndOrZPX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := ZeroPageX(cpu, operand1, operand2)
+	value, address := ZeroPageX(cpu, operand1, operand2, false)
 	ShiftLeftAndOr(cpu, value(), address)
 }
 
 func ShiftLeftAndOrABS(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := Absolute(cpu, operand1, operand2)
+	value, address := Absolute(cpu, operand1, operand2, false)
 	ShiftLeftAndOr(cpu, value(), address)
 }
 
 func ShiftLeftAndOrABSX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := AbsoluteX(cpu, operand1, operand2)
+	value, address := AbsoluteX(cpu, operand1, operand2, false)
 	ShiftLeftAndOr(cpu, value(), address)
 }
 
 func ShiftLeftAndOrABSY(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := AbsoluteY(cpu, operand1, operand2)
+	value, address := AbsoluteY(cpu, operand1, operand2, false)
 	ShiftLeftAndOr(cpu, value(), address)
 }
 
 func ShiftLeftAndOrINDX(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := IndexedIndirect(cpu, operand1, operand2)
+	value, address := IndexedIndirect(cpu, operand1, operand2, false)
 	ShiftLeftAndOr(cpu, value(), address)
 }
 
 func ShiftLeftAndOrINDY(cpu *CPU, operand1 uint8, operand2 uint8) {
-	value, address := IndirectIndexed(cpu, operand1, operand2)
+	value, address := IndirectIndexed(cpu, operand1, operand2, false)
 	ShiftLeftAndOr(cpu, value(), address)
 }
