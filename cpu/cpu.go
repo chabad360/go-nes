@@ -15,9 +15,8 @@ type CPU struct {
 
 	Mapper Mapper
 
-	Clock       <-chan int
-	Cycles      int
-	ClockTiming clock.Standard
+	Clock  clock.Clock
+	Cycles uint
 
 	Log     bool
 	Stubbed bool
@@ -168,20 +167,8 @@ func (cpu *CPU) Pop() uint8 {
 
 // Wait waits for the next clock cycle.
 func (cpu *CPU) Wait() {
-	div := 1
-	switch cpu.ClockTiming {
-	case clock.NTSC:
-		div = 12
-	case clock.PAL:
-		div = 16
-	case clock.Dendy:
-		div = 15
-	}
-	cyc := 0
-	for i := 0; i < div; i++ {
-		cyc = <-cpu.Clock
-	}
-	cpu.Cycles = cyc / div
+	div := uint(cpu.Clock.Standard().CPUDivider())
+	cpu.Cycles = cpu.Clock.Wait((cpu.Cycles+1)*div) / div
 }
 
 // Flags returns the current status flags as a byte.

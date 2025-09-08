@@ -1,8 +1,14 @@
 package clock
 
-import "time"
-
 type Standard int
+
+func (s Standard) Frequency() int {
+	return StandardFrequencies[s]
+}
+
+func (s Standard) CPUDivider() int {
+	return StandardCPUDividers[s]
+}
 
 const (
 	NTSC Standard = iota
@@ -10,52 +16,27 @@ const (
 	Dendy
 )
 
-type Clock struct {
-	// Frequency of the clock in Hz
-	Frequency int
-	// Current tick
-	Ticks int
-
-	Listeners []chan int
+var StandardFrequencies = map[Standard]int{
+	NTSC:  236250000 / 11,
+	PAL:   26601712,
+	Dendy: 26601712,
 }
 
-// New creates a new clock with the given frequency
-func New(s Standard) *Clock {
-	var frequency int
-	switch s {
-	case NTSC:
-		frequency = 236250000 / 11
-	case PAL:
-		frequency = 26601712
-	}
-	return &Clock{
-		Frequency: frequency,
-		Ticks:     0,
-		Listeners: []chan int{},
-	}
+var StandardCPUDividers = map[Standard]int{
+	NTSC:  12,
+	PAL:   16,
+	Dendy: 15,
 }
 
-// AddListener adds a listener to the clock
-func (c *Clock) AddListener(listener chan int) {
-	c.Listeners = append(c.Listeners, listener)
-}
+type Clock interface {
+	// Wait waits until the specified number of ticks have passed and returns the current tick count
+	Wait(uint) uint
+	// Tick ticks the clock and returns the current tick count
+	Tick() uint
 
-// Tick ticks the clock and notifies all listeners
-func (c *Clock) Tick() {
-	c.Ticks++
-	for _, listener := range c.Listeners {
-		listener <- c.Ticks
-	}
-}
+	// Standard returns the clock standard (NTSC, PAL, Dendy)
+	Standard() Standard
 
-// Start starts the clock
-func (c *Clock) Start() {
-	ticker := time.NewTicker(time.Second / time.Duration(c.Frequency))
-
-	for {
-		select {
-		case <-ticker.C:
-			c.Tick()
-		}
-	}
+	// Ticks returns the current tick count
+	Ticks() uint
 }
