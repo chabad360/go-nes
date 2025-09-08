@@ -6,37 +6,37 @@ import (
 )
 
 type RuntimeClock struct {
-	s     Standard
-	ticks *atomic.Uint32
+	s Standard
 
-	held *atomic.Bool
+	ticks *uint32
+	held  *uint32
 }
 
 func NewRuntimeClock(s Standard) *RuntimeClock {
 	return &RuntimeClock{
-		ticks: &atomic.Uint32{},
-		held:  &atomic.Bool{},
+		ticks: new(uint32),
+		held:  new(uint32),
 		s:     s,
 	}
 }
 
 func (c *RuntimeClock) Wait(until uint) uint {
-	t := c.ticks.Load()
+	t := atomic.LoadUint32(c.ticks)
 	for uint32(until) > t {
-		c.held.Store(true)
+		atomic.StoreUint32(c.held, 1)
 		runtime.Gosched()
-		t = c.ticks.Load()
+		t = atomic.LoadUint32(c.ticks)
+
 	}
 	return uint(t)
 }
 
 func (c *RuntimeClock) Tick() uint {
-	if !c.held.CompareAndSwap(true, false) {
-		return uint(c.ticks.Load())
+	if !atomic.CompareAndSwapUint32(c.held, 1, 0) {
+		return uint(atomic.LoadUint32(c.ticks))
 	}
 
-	t := c.ticks.Add(1)
-	return uint(t)
+	return uint(atomic.AddUint32(c.ticks, 1))
 }
 
 func (c *RuntimeClock) Standard() Standard {
@@ -44,5 +44,5 @@ func (c *RuntimeClock) Standard() Standard {
 }
 
 func (c *RuntimeClock) Ticks() uint {
-	return uint(c.ticks.Load())
+	return uint(atomic.LoadUint32(c.ticks))
 }

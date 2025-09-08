@@ -7,16 +7,29 @@ import (
 )
 
 func BenchmarkClock_NESTest(b *testing.B) {
-	clocks := []struct {
+	benchmarks := []struct {
 		name string
 		new  func() clock.Clock
 	}{
-		{"ChannelClock", func() clock.Clock { return clock.New(clock.NTSC) }},
-		{"CondClock", func() clock.Clock { return clock.NewCondClock(clock.NTSC) }},
-		{"RuntimeClock", func() clock.Clock { return clock.NewRuntimeClock(clock.NTSC) }},
+		{
+			"ChannelClock",
+			func() clock.Clock { return clock.NewChannelClock(clock.NTSC) },
+		},
+		{
+			"Channel2Clock",
+			func() clock.Clock { return clock.NewChannel2Clock(clock.NTSC) },
+		},
+		{
+			"CondClock",
+			func() clock.Clock { return clock.NewCondClock(clock.NTSC) },
+		},
+		{
+			"RuntimeClock",
+			func() clock.Clock { return clock.NewRuntimeClock(clock.NTSC) },
+		},
 	}
-	for _, clk := range clocks {
-		b.Run(clk.name, func(b *testing.B) {
+	for _, bb := range benchmarks {
+		b.Run(bb.name, func(b *testing.B) {
 			b.ReportAllocs()
 			// Load the NESTest cartridge
 			cartidge, err := cart.NewCartidge("testdata/nestest.nes")
@@ -24,7 +37,7 @@ func BenchmarkClock_NESTest(b *testing.B) {
 				b.Fatalf("Failed to load NESTest cartidge: %v", err)
 			}
 
-			c := clk.new()
+			c := bb.new()
 
 			cpu := &CPU{
 				Mapper: &NROM{
@@ -47,13 +60,27 @@ func BenchmarkClock_NESTest(b *testing.B) {
 				}
 			}()
 
+			go func() {
+				w := c.Wait
+				if wc, ok := c.(clock.PPUClock); ok {
+					w = wc.PPUWait
+				}
+				//ti := time.NewTicker(time.Second / (236250000 / 11))
+				for {
+					select {
+					case <-b.Context().Done():
+						return
+					default:
+						w(c.Ticks() + 4)
+					}
+				}
+			}()
+
 			cpu.PowerOn()
 			cpu.PC = 0xC000 // Start at the beginning of nestest
 			b.ResetTimer()
 			for b.Loop() {
-				exec := cpu.Decode()
-				cpu.Fetch(exec)
-				cpu.Execute(exec)
+				cpu.Step()
 			}
 			b.StopTimer()
 
@@ -67,7 +94,7 @@ func BenchmarkClock_NESTest(b *testing.B) {
 				b.Errorf("Expected 0x00 at address 0x0003, got 0x%02X", result2)
 			}
 
-			//b.Logf("Cycles: %d", cpu.Cycles)
+			b.ReportMetric(float64(cpu.Cycles), "cycles")
 		})
 	}
 }

@@ -15,7 +15,13 @@ import (
 
 type TestLog struct {
 	ResultState
-	Exec
+
+	Instruction Instruction
+	Opcode      uint8
+	PC          uint16
+
+	Operand1 uint8
+	Operand2 uint8
 
 	Operation string
 	Args      string
@@ -46,7 +52,7 @@ func ParseTestLog(logFile string) ([]TestLog, error) {
 
 		// Extract the PC, opcode, operands, and operation
 		n, err := fmt.Sscanf(matches[1], "%X  %X %X %X",
-			&state.Exec.PC, &state.Exec.Opcode, &state.Exec.Operand1, &state.Exec.Operand2)
+			&state.PC, &state.Opcode, &state.Operand1, &state.Operand2)
 		if err != nil && n < 2 {
 			return nil, fmt.Errorf("failed to parse instruction: %s", line)
 		}
@@ -161,65 +167,65 @@ func TestCPU_NESTest(t *testing.T) {
 		if t.Failed() {
 			t.FailNow()
 		}
-		//t.Run(fmt.Sprintf("%d: %X %s", i, l.Exec.PC, l.Operation), func(t *testing.T) {
-		wg.Add(1)
-		defer wg.Done()
+		t.Run(fmt.Sprintf("%d: %X %s", i, l.PC, l.Operation), func(t *testing.T) {
+			wg.Add(1)
+			defer wg.Done()
 
-		exec := cpu.Decode()
-		//if _, exists := Instructions[exec.Opcode]; !exists {
-		//	t.Errorf("Encountered unknown opcode at %04X: %02X, Expected: %02X (%s), Args: %X %X (%s)",
-		//		exec.PC, exec.Opcode, l.Opcode, l.Operation, l.Operand1, l.Operand2, l.Args)
-		//	t.Fail()
-		//}
-		if exec.PC != l.Exec.PC {
-			t.Errorf("Decode failed: PC mismatch: expected %04X, got %04X", l.Exec.PC, exec.PC)
-			t.Fail()
-		}
-		if exec.Opcode != l.Exec.Opcode {
-			t.Errorf("Decode failed: Opcode mismatch: expected %02X %s, got %02X", l.Exec.Opcode, l.Operation, exec.Opcode)
-			t.Fail()
-		}
+			instr, opcode, pc := cpu.Decode()
+			//if _, exists := Instructions[exec.Opcode]; !exists {
+			//	t.Errorf("Encountered unknown opcode at %04X: %02X, Expected: %02X (%s), Args: %X %X (%s)",
+			//		exec.PC, exec.Opcode, l.Opcode, l.Operation, l.Operand1, l.Operand2, l.Args)
+			//	t.Fail()
+			//}
+			if pc != l.PC {
+				t.Errorf("Decode failed: PC mismatch: expected %04X, got %04X", l.PC, pc)
+				t.Fail()
+			}
+			if opcode != l.Opcode {
+				t.Errorf("Decode failed: Opcode mismatch: expected %02X %s, got %02X", l.Opcode, l.Operation, opcode)
+				t.Fail()
+			}
 
-		cpu.Fetch(exec)
-		if exec.Operand1 != l.Exec.Operand1 || exec.Operand2 != l.Exec.Operand2 {
-			t.Errorf("Decode failed: Operand mismatch: expected %02X %02X (%s), got %02X %02X", l.Exec.Operand1, l.Exec.Operand2, l.Args, exec.Operand1, exec.Operand2)
-			t.Fail()
-		}
-		// if the instruction is likely going to corrupt CPU state, stop this iteration.
-		if t.Failed() {
-			t.FailNow()
-		}
+			op1, op2 := cpu.Fetch(instr)
+			if op1 != l.Operand1 || op2 != l.Operand2 {
+				t.Errorf("Decode failed: Operand mismatch: expected %02X %02X (%s), got %02X %02X", l.Operand1, l.Operand2, l.Args, op1, op2)
+				t.Fail()
+			}
+			// if the instruction is likely going to corrupt CPU state, stop this iteration.
+			if t.Failed() {
+				t.FailNow()
+			}
 
-		cpu.Execute(exec)
-		if cpu.Stubbed {
-			t.Fail()
-		}
+			cpu.Execute(instr, op1, op2)
+			if cpu.Stubbed {
+				t.Fail()
+			}
 
-		if len(testlog) <= i+1 {
-			return
-		}
+			if len(testlog) <= i+1 {
+				return
+			}
 
-		l1 := testlog[i+1]
-		testFlags(t, cpu, l1)
-		if cpu.X != l1.X {
-			t.Errorf("X register mismatch: expected %02X, got %02X", l1.X, cpu.X)
-		}
-		if cpu.Y != l1.Y {
-			t.Errorf("Y register mismatch: expected %02X, got %02X", l1.Y, cpu.Y)
-		}
-		if cpu.SP != l1.SP {
-			t.Errorf("SP register mismatch: expected %02X, got %02X", l1.SP, cpu.SP)
-		}
-		if cpu.A != l1.A {
-			t.Errorf("A register mismatch: expected %02X, got %02X", l1.A, cpu.A)
-		}
-		if cpu.PC != l1.Exec.PC {
-			t.Errorf("Target PC mismatch: expected %04X, got %04X", l1.Exec.PC, cpu.PC)
-		}
-		if cpu.Cycles != l1.Cycles {
-			t.Errorf("Cycles mismatch: expected %d, got %d", l1.Cycles, cpu.Cycles)
-		}
-		//})
+			l1 := testlog[i+1]
+			testFlags(t, cpu, l1)
+			if cpu.X != l1.X {
+				t.Errorf("X register mismatch: expected %02X, got %02X", l1.X, cpu.X)
+			}
+			if cpu.Y != l1.Y {
+				t.Errorf("Y register mismatch: expected %02X, got %02X", l1.Y, cpu.Y)
+			}
+			if cpu.SP != l1.SP {
+				t.Errorf("SP register mismatch: expected %02X, got %02X", l1.SP, cpu.SP)
+			}
+			if cpu.A != l1.A {
+				t.Errorf("A register mismatch: expected %02X, got %02X", l1.A, cpu.A)
+			}
+			if cpu.PC != l1.PC {
+				t.Errorf("Target PC mismatch: expected %04X, got %04X", l1.PC, cpu.PC)
+			}
+			if cpu.Cycles != l1.Cycles {
+				t.Errorf("Cycles mismatch: expected %d, got %d", l1.Cycles, cpu.Cycles)
+			}
+		})
 	}
 
 	wg.Wait()
@@ -352,19 +358,19 @@ func TestCPU_BlarggOfficialv5(t *testing.T) {
 	for i := 0; i <= 16; i++ {
 		t.Run("Test "+fmt.Sprintf("%d", i), func(t *testing.T) {
 			for j := 0; ; j++ {
-				exec := cpu.Decode()
+				instr, _, _ := cpu.Decode()
 				//if _, exists := Instructions[exec.Opcode]; !exists {
 				//	t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
 				//	t.Fail()
 				//}
 
-				cpu.Fetch(exec)
+				op1, op2 := cpu.Fetch(instr)
 				// if the instruction is likely going to corrupt CPU state, stop this iteration.
 				if t.Failed() {
 					t.FailNow()
 				}
 
-				cpu.Execute(exec)
+				cpu.Execute(instr, op1, op2)
 				if cpu.Stubbed {
 					t.Fail()
 				}
@@ -390,19 +396,19 @@ func TestCPU_BlarggOfficialv5(t *testing.T) {
 	}
 
 	for j := 0; ; j++ {
-		exec := cpu.Decode()
+		instr, _, _ := cpu.Decode()
 		//if _, exists := Instructions[exec.Opcode]; !exists {
 		//	t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
 		//	t.Fail()
 		//}
 
-		cpu.Fetch(exec)
+		op1, op2 := cpu.Fetch(instr)
 		// if the instruction is likely going to corrupt CPU state, stop this iteration.
 		if t.Failed() {
 			t.FailNow()
 		}
 
-		cpu.Execute(exec)
+		cpu.Execute(instr, op1, op2)
 		if cpu.Stubbed {
 			t.Fail()
 		}
@@ -430,7 +436,7 @@ func TestCPU_BlarggAllv5(t *testing.T) {
 		t.Fatalf("Failed to load all_instrs cartridge: %v", err)
 	}
 
-	c := clock.New(clock.NTSC)
+	c := clock.NewRuntimeClock(clock.NTSC)
 	currentTest = 0
 
 	cpu := &CPU{
@@ -467,19 +473,19 @@ func TestCPU_BlarggAllv5(t *testing.T) {
 	for i := 0; i <= 16; i++ {
 		t.Run("Test "+fmt.Sprintf("%d", i), func(t *testing.T) {
 			for j := 0; ; j++ {
-				exec := cpu.Decode()
+				instr, _, _ := cpu.Decode()
 				//if _, exists := Instructions[exec.Opcode]; !exists {
 				//	t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
 				//	t.Fail()
 				//}
 
-				cpu.Fetch(exec)
+				op1, op2 := cpu.Fetch(instr)
 				// if the instruction is likely going to corrupt CPU state, stop this iteration.
 				if t.Failed() {
 					t.FailNow()
 				}
 
-				cpu.Execute(exec)
+				cpu.Execute(instr, op1, op2)
 				if cpu.Stubbed {
 					t.Fail()
 				}
@@ -505,19 +511,19 @@ func TestCPU_BlarggAllv5(t *testing.T) {
 	}
 
 	for j := 0; ; j++ {
-		exec := cpu.Decode()
+		instr, _, _ := cpu.Decode()
 		//if _, exists := Instructions[exec.Opcode]; !exists {
 		//	t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
 		//	t.Fail()
 		//}
 
-		cpu.Fetch(exec)
+		op1, op2 := cpu.Fetch(instr)
 		// if the instruction is likely going to corrupt CPU state, stop this iteration.
 		if t.Failed() {
 			t.FailNow()
 		}
 
-		cpu.Execute(exec)
+		cpu.Execute(instr, op1, op2)
 		if cpu.Stubbed {
 			t.Fail()
 		}

@@ -61,56 +61,35 @@ func (cpu *CPU) Reset() {
 	cpu.I = true
 }
 
-type Exec struct {
-	Instruction Instruction
-	Opcode      uint8
-	Operand1    uint8
-	Operand2    uint8
-	PC          uint16
-}
-
 // Decode fetches the next opcode from memory and returns the corresponding instruction.
-func (cpu *CPU) Decode() *Exec {
+func (cpu *CPU) Decode() (Instruction, uint8, uint16) {
 	opcode := cpu.Mapper.Read(cpu, cpu.PC)
 	cpu.Wait()
-	instruction := Instructions[opcode]
-	//if !exists {
-	//	instruction = Instruction{
-	//		Opcode:  opcode,
-	//		Size:    0,
-	//		Cycles:  2,
-	//		Execute: UNKNOWN,
-	//	}
-	//}
-
-	exec := &Exec{
-		Instruction: instruction,
-		Opcode:      opcode,
-		PC:          cpu.PC,
-	}
+	pc := cpu.PC
 
 	cpu.Wait() // Fake fetch (in theory, a cycle accurate system should also load and store the next byte here)
 	cpu.PC++
 
-	return exec
+	return Instructions[opcode], opcode, pc
 }
 
 // Fetch retrieves the operands for the instruction based on its size.
-func (cpu *CPU) Fetch(exec *Exec) {
-	if exec.Instruction.Size >= 2 {
-		exec.Operand1 = cpu.Mapper.Read(cpu, cpu.PC)
+func (cpu *CPU) Fetch(instr Instruction) (operand1 uint8, operand2 uint8) {
+	if instr.Size >= 2 {
+		operand1 = cpu.Mapper.Read(cpu, cpu.PC)
 		cpu.PC++
 		// We don't need to wait, because the 6502 always prefetches the next byte
 	}
-	if exec.Instruction.Size == 3 {
-		exec.Operand2 = cpu.Mapper.Read(cpu, cpu.PC)
+	if instr.Size == 3 {
+		operand2 = cpu.Mapper.Read(cpu, cpu.PC)
 		cpu.PC++
 		cpu.Wait()
 	}
+	return operand1, operand2
 }
 
 // Execute runs the instruction with the provided operands.
-func (cpu *CPU) Execute(exec *Exec) {
+func (cpu *CPU) Execute(instr Instruction, operand1 uint8, operand2 uint8) {
 	if cpu.Log {
 		slog.Info("CPU State Pre-Operation",
 			"A", fmt.Sprintf("0x%02X", cpu.A),
@@ -130,7 +109,7 @@ func (cpu *CPU) Execute(exec *Exec) {
 	}
 	cpu.Stubbed = false
 
-	exec.Instruction.Execute(cpu, exec.Operand1, exec.Operand2)
+	instr.Execute(cpu, operand1, operand2)
 	if cpu.Log {
 		slog.Info("CPU State Post-Operation",
 			"A", fmt.Sprintf("0x%02X", cpu.A),
@@ -167,8 +146,14 @@ func (cpu *CPU) Pop() uint8 {
 
 // Wait waits for the next clock cycle.
 func (cpu *CPU) Wait() {
-	div := uint(cpu.Clock.Standard().CPUDivider())
+	div := cpu.Clock.Standard().CPUDivider()
 	cpu.Cycles = cpu.Clock.Wait((cpu.Cycles+1)*div) / div
+}
+
+func (c *CPU) Step() {
+	instr, _, _ := c.Decode()
+	op1, op2 := c.Fetch(instr)
+	c.Execute(instr, op1, op2)
 }
 
 // Flags returns the current status flags as a byte.
