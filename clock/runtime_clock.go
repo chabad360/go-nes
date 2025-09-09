@@ -20,29 +20,29 @@ func NewRuntimeClock(s Standard) *RuntimeClock {
 	}
 }
 
-func (c *RuntimeClock) Wait(until uint) uint {
+func (c *RuntimeClock) Wait(until uint32) uint32 {
 	t := atomic.LoadUint32(c.ticks)
-	for uint32(until) > t {
+	for until > t {
 		atomic.StoreUint32(c.held, 1)
 		runtime.Gosched()
 		t = atomic.LoadUint32(c.ticks)
 
 	}
-	return uint(t)
+	return t
 }
 
-func (c *RuntimeClock) Tick() uint {
+func (c *RuntimeClock) Tick() uint32 {
 	if !atomic.CompareAndSwapUint32(c.held, 1, 0) {
-		return uint(atomic.LoadUint32(c.ticks))
+		return atomic.LoadUint32(c.ticks)
 	}
 
-	return uint(atomic.AddUint32(c.ticks, 1))
+	return atomic.AddUint32(c.ticks, 1)
 }
 
 func (c *RuntimeClock) Standard() Standard {
 	return c.s
 }
 
-func (c *RuntimeClock) Ticks() uint {
-	return uint(atomic.LoadUint32(c.ticks))
+func (c *RuntimeClock) Ticks() uint32 {
+	return atomic.LoadUint32(c.ticks)
 }

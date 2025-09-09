@@ -5,7 +5,7 @@ type ResultState struct {
 	C, Z, I, D, B, V, N bool
 
 	PC     uint16
-	Cycles uint
+	Cycles uint32
 }
 
 func CPUToResultState(cpu *CPU) ResultState {

@@ -7,11 +7,11 @@ import (
 
 type Standard int
 
-func (s Standard) Frequency() uint {
+func (s Standard) Frequency() uint32 {
 	return StandardFrequencies[s]
 }
 
-func (s Standard) CPUDivider() uint {
+func (s Standard) CPUDivider() uint32 {
 	return StandardCPUDividers[s]
 }
 
@@ -21,13 +21,13 @@ const (
 	Dendy
 )
 
-var StandardFrequencies = map[Standard]uint{
+var StandardFrequencies = map[Standard]uint32{
 	NTSC:  236250000 / 11,
 	PAL:   26601712,
 	Dendy: 26601712,
 }
 
-var StandardCPUDividers = map[Standard]uint{
+var StandardCPUDividers = map[Standard]uint32{
 	NTSC:  12,
 	PAL:   16,
 	Dendy: 15,
@@ -35,21 +35,21 @@ var StandardCPUDividers = map[Standard]uint{
 
 type Clock interface {
 	// Wait waits until the specified number of ticks have passed and returns the current tick count
-	Wait(uint) uint
+	Wait(uint32) uint32
 
 	// Tick ticks the clock and returns the current tick count
-	Tick() uint
+	Tick() uint32
 
 	// Standard returns the clock standard (NTSC, PAL, Dendy)
 	Standard() Standard
 
 	// Ticks returns the current tick count
-	Ticks() uint
+	Ticks() uint32
 }
 
 type PPUClock interface {
 	Clock
-	PPUWait(uint) uint
+	PPUWait(uint32) uint32
 }
 
 func StartClock(ctx context.Context, c Clock) context.CancelFunc {

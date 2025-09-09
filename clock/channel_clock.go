@@ -6,16 +6,16 @@ import (
 
 type ChannelClock struct {
 	// Current tick
-	ticks uint
+	ticks uint32
 
 	standard Standard
 
 	m *sync.Mutex
 
-	Listeners []chan uint
+	Listeners []chan uint32
 }
 
-func (c *ChannelClock) Ticks() uint {
+func (c *ChannelClock) Ticks() uint32 {
 	return c.ticks
 }
 
@@ -28,20 +28,20 @@ func NewChannelClock(s Standard) *ChannelClock {
 	return &ChannelClock{
 		ticks:     0,
 		standard:  s,
-		Listeners: []chan uint{},
+		Listeners: []chan uint32{},
 		m:         &sync.Mutex{},
 	}
 }
 
 // AddListener adds a listener to the clock
-func (c *ChannelClock) AddListener(listener chan uint) {
+func (c *ChannelClock) AddListener(listener chan uint32) {
 	c.m.Lock()
 	defer c.m.Unlock()
 	c.Listeners = append(c.Listeners, listener)
 }
 
 // Tick ticks the clock and notifies all listeners
-func (c *ChannelClock) Tick() uint {
+func (c *ChannelClock) Tick() uint32 {
 	c.m.Lock()
 	defer c.m.Unlock()
 	if len(c.Listeners) == 0 {
@@ -55,13 +55,13 @@ func (c *ChannelClock) Tick() uint {
 	return c.ticks
 }
 
-func (c *ChannelClock) wait() uint {
-	listener := make(chan uint)
+func (c *ChannelClock) wait() uint32 {
+	listener := make(chan uint32)
 	c.AddListener(listener)
 	return <-listener
 }
 
-func (c *ChannelClock) Wait(until uint) uint {
+func (c *ChannelClock) Wait(until uint32) uint32 {
 	for c.Ticks() < until {
 		c.wait()
 	}

@@ -16,7 +16,7 @@ type CPU struct {
 	Mapper Mapper
 
 	Clock  clock.Clock
-	Cycles uint
+	Cycles uint32
 
 	Log     bool
 	Stubbed bool

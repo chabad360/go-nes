@@ -4,6 +4,7 @@ import (
 	"go-nes/cart"
 	"go-nes/clock"
 	"testing"
+	"time"
 )
 
 func BenchmarkClock_NESTest(b *testing.B) {
@@ -26,6 +27,10 @@ func BenchmarkClock_NESTest(b *testing.B) {
 		{
 			"RuntimeClock",
 			func() clock.Clock { return clock.NewRuntimeClock(clock.NTSC) },
+		},
+		{
+			"AtomiclessClock",
+			func() clock.Clock { return clock.NewAtomiclessClock(clock.NTSC) },
 		},
 	}
 	for _, bb := range benchmarks {
@@ -78,11 +83,13 @@ func BenchmarkClock_NESTest(b *testing.B) {
 
 			cpu.PowerOn()
 			cpu.PC = 0xC000 // Start at the beginning of nestest
+			t := time.Now()
 			b.ResetTimer()
 			for b.Loop() {
 				cpu.Step()
 			}
 			b.StopTimer()
+			t2 := time.Since(t)
 
 			result1 := cpu.Memory[0x0002]
 			result2 := cpu.Memory[0x0003]
@@ -94,7 +101,97 @@ func BenchmarkClock_NESTest(b *testing.B) {
 				b.Errorf("Expected 0x00 at address 0x0003, got 0x%02X", result2)
 			}
 
-			b.ReportMetric(float64(cpu.Cycles), "cycles")
+			b.ReportMetric(float64(cpu.Cycles)/t2.Seconds(), "cycles/sec")
+		})
+	}
+}
+
+func BenchmarkClock_BlarggAllv5(b *testing.B) {
+	benchmarks := []struct {
+		name string
+		new  func() clock.Clock
+	}{
+		{
+			"ChannelClock",
+			func() clock.Clock { return clock.NewChannelClock(clock.NTSC) },
+		},
+		{
+			"Channel2Clock",
+			func() clock.Clock { return clock.NewChannel2Clock(clock.NTSC) },
+		},
+		{
+			"CondClock",
+			func() clock.Clock { return clock.NewCondClock(clock.NTSC) },
+		},
+		{
+			"RuntimeClock",
+			func() clock.Clock { return clock.NewRuntimeClock(clock.NTSC) },
+		},
+		{
+			"AtomiclessClock",
+			func() clock.Clock { return clock.NewAtomiclessClock(clock.NTSC) },
+		},
+	}
+	for _, bb := range benchmarks {
+		b.Run(bb.name, func(b *testing.B) {
+			b.ReportAllocs()
+			cartridge, err := cart.NewCartidge("testdata/all_instrs.nes")
+			if err != nil {
+				b.Fatalf("Failed to load all_instrs cartridge: %v", err)
+			}
+
+			c := bb.new()
+
+			cpu := &CPU{
+				Mapper: &NROM{
+					PRGROM: cartridge.PRGROM,
+					CHRROM: cartridge.CHRROM,
+				},
+				Clock: c,
+
+				//Log: true,
+			}
+
+			if len(cartridge.PRGROM) == 0 {
+				b.Fatalf("No PRG ROM found in cartridge")
+			}
+
+			go func() {
+				for {
+					c.Tick()
+				}
+			}()
+
+			go func() {
+				w := c.Wait
+				if wc, ok := c.(clock.PPUClock); ok {
+					w = wc.PPUWait
+				}
+				for {
+					w(c.Ticks() + 4)
+				}
+			}()
+
+			cpu.PowerOn()
+
+			for {
+				cpu.Step()
+				result := cpu.Mapper.Read(cpu, 0x6000)
+				if result != 0x00 {
+					break
+				}
+			}
+
+			cpu.Cycles = 0
+			t := time.Now()
+			b.ResetTimer()
+			for b.Loop() {
+				cpu.Step()
+			}
+			b.StopTimer()
+			t2 := time.Since(t)
+
+			b.ReportMetric(float64(cpu.Cycles)/t2.Seconds(), "cycles/sec")
 		})
 	}
 }

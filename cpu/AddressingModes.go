@@ -10,17 +10,27 @@ type AddressingMode func(cpu *CPU, operand1, operand2 uint8, valueless bool) (va
 // ValueGuard is a closure used to wrap the value of memory, to only cost an instruction when the value is used
 type ValueGuard func() uint8
 
+var cache uint8
+var cacheCPU *CPU
+
+func guardedVal() uint8 {
+	cacheCPU.Wait()
+	return cache
+}
+
+func unguardedVal() uint8 {
+	return cache
+}
+
 func GuardValue(cpu *CPU, value uint8) ValueGuard {
-	return func() uint8 {
-		cpu.Wait()
-		return value
-	}
+	cache = value
+	cacheCPU = cpu
+	return guardedVal
 }
 
 func UnguardedValue(value uint8) ValueGuard {
-	return func() uint8 {
-		return value
-	}
+	cache = value
+	return unguardedVal
 }
 
 func logInstruction(cpu *CPU, mode string, operand1, operand2 uint8, address uint16, value uint8, size int) {

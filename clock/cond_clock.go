@@ -9,7 +9,7 @@ type CondClock struct {
 	C *sync.Cond
 
 	s     Standard
-	ticks uint
+	ticks uint32
 
 	held bool
 }
@@ -23,7 +23,7 @@ func NewCondClock(s Standard) *CondClock {
 	}
 }
 
-func (c *CondClock) Wait(until uint) uint {
+func (c *CondClock) Wait(until uint32) uint32 {
 	c.C.L.Lock()
 	defer c.C.L.Unlock()
 
@@ -34,7 +34,7 @@ func (c *CondClock) Wait(until uint) uint {
 	return c.ticks
 }
 
-func (c *CondClock) Tick() uint {
+func (c *CondClock) Tick() uint32 {
 	c.m.Lock()
 
 	if !c.held {
@@ -55,7 +55,7 @@ func (c *CondClock) Standard() Standard {
 	return c.s
 }
 
-func (c *CondClock) Ticks() uint {
+func (c *CondClock) Ticks() uint32 {
 	c.m.RLock()
 	defer c.m.RUnlock()
 	return c.ticks

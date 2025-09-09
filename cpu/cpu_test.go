@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"sync"
 	"testing"
-	"time"
 )
 
 type TestLog struct {
@@ -135,7 +134,7 @@ func TestCPU_NESTest(t *testing.T) {
 		t.Fatalf("Failed to load NESTest cartidge: %v", err)
 	}
 
-	c := clock.NewRuntimeClock(clock.NTSC)
+	c := clock.NewAtomiclessClock(clock.NTSC)
 
 	cpu := &CPU{
 		Mapper: &NROM{
@@ -143,16 +142,15 @@ func TestCPU_NESTest(t *testing.T) {
 			CHRROM: cartidge.CHRROM,
 		},
 		Clock: c,
-		//Log:   true,
+		Log:   true,
 	}
 
 	go func() {
-		ti := time.NewTicker(time.Second / (236250000 / 11))
 		for {
 			select {
 			case <-t.Context().Done():
 				return
-			case <-ti.C:
+			default:
 				c.Tick()
 			}
 		}
@@ -172,11 +170,6 @@ func TestCPU_NESTest(t *testing.T) {
 			defer wg.Done()
 
 			instr, opcode, pc := cpu.Decode()
-			//if _, exists := Instructions[exec.Opcode]; !exists {
-			//	t.Errorf("Encountered unknown opcode at %04X: %02X, Expected: %02X (%s), Args: %X %X (%s)",
-			//		exec.PC, exec.Opcode, l.Opcode, l.Operation, l.Operand1, l.Operand2, l.Args)
-			//	t.Fail()
-			//}
 			if pc != l.PC {
 				t.Errorf("Decode failed: PC mismatch: expected %04X, got %04X", l.PC, pc)
 				t.Fail()
@@ -341,13 +334,7 @@ func TestCPU_BlarggOfficialv5(t *testing.T) {
 	go func() {
 		//ti := time.NewTicker(time.Second / (236250000 / 11))
 		for {
-			select {
-			case <-t.Context().Done():
-				return
-			//case <-ti.C:
-			default:
-				c.Tick()
-			}
+			c.Tick()
 		}
 	}()
 
@@ -358,25 +345,12 @@ func TestCPU_BlarggOfficialv5(t *testing.T) {
 	for i := 0; i <= 16; i++ {
 		t.Run("Test "+fmt.Sprintf("%d", i), func(t *testing.T) {
 			for j := 0; ; j++ {
-				instr, _, _ := cpu.Decode()
-				//if _, exists := Instructions[exec.Opcode]; !exists {
-				//	t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
-				//	t.Fail()
-				//}
-
-				op1, op2 := cpu.Fetch(instr)
-				// if the instruction is likely going to corrupt CPU state, stop this iteration.
-				if t.Failed() {
-					t.FailNow()
-				}
-
-				cpu.Execute(instr, op1, op2)
+				cpu.Step()
 				if cpu.Stubbed {
 					t.Fail()
 				}
 
 				testNum, testComleted, testPassed, _ := ReadBlargg(t, cpu)
-				//completed = c
 				if currentTest != testNum && currentTest == 0 {
 					currentTest = testNum
 					return
@@ -396,19 +370,7 @@ func TestCPU_BlarggOfficialv5(t *testing.T) {
 	}
 
 	for j := 0; ; j++ {
-		instr, _, _ := cpu.Decode()
-		//if _, exists := Instructions[exec.Opcode]; !exists {
-		//	t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
-		//	t.Fail()
-		//}
-
-		op1, op2 := cpu.Fetch(instr)
-		// if the instruction is likely going to corrupt CPU state, stop this iteration.
-		if t.Failed() {
-			t.FailNow()
-		}
-
-		cpu.Execute(instr, op1, op2)
+		cpu.Step()
 		if cpu.Stubbed {
 			t.Fail()
 		}
@@ -473,19 +435,7 @@ func TestCPU_BlarggAllv5(t *testing.T) {
 	for i := 0; i <= 16; i++ {
 		t.Run("Test "+fmt.Sprintf("%d", i), func(t *testing.T) {
 			for j := 0; ; j++ {
-				instr, _, _ := cpu.Decode()
-				//if _, exists := Instructions[exec.Opcode]; !exists {
-				//	t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
-				//	t.Fail()
-				//}
-
-				op1, op2 := cpu.Fetch(instr)
-				// if the instruction is likely going to corrupt CPU state, stop this iteration.
-				if t.Failed() {
-					t.FailNow()
-				}
-
-				cpu.Execute(instr, op1, op2)
+				cpu.Step()
 				if cpu.Stubbed {
 					t.Fail()
 				}
@@ -511,19 +461,7 @@ func TestCPU_BlarggAllv5(t *testing.T) {
 	}
 
 	for j := 0; ; j++ {
-		instr, _, _ := cpu.Decode()
-		//if _, exists := Instructions[exec.Opcode]; !exists {
-		//	t.Errorf("Encountered unknown opcode at %04X: %02X", exec.PC, exec.Opcode)
-		//	t.Fail()
-		//}
-
-		op1, op2 := cpu.Fetch(instr)
-		// if the instruction is likely going to corrupt CPU state, stop this iteration.
-		if t.Failed() {
-			t.FailNow()
-		}
-
-		cpu.Execute(instr, op1, op2)
+		cpu.Step()
 		if cpu.Stubbed {
 			t.Fail()
 		}
